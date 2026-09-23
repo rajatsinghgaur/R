@@ -42,10 +42,10 @@ header{position:absolute;top:0;left:0;right:0;z-index:20;padding:16px 20px;displ
 </main>
 <script type="module">
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-import {FaceLandmarker,FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm";
 
 const $=s=>document.querySelector(s);
 const video=$("#scene"),canvas=$("#overlay"),ctx=canvas.getContext("2d");
+let FaceLandmarker=null,FilesetResolver=null;
 const FILTERS=[["cowl","Cowl"],["shadow","Shadow"],["detective","Detective"],["armored","Armored"],["batEyes","Bat Eyes"]];
 let stream=null,landmarker=null,lastVideo=-1,mirror=true,active="cowl",running=false,faceSeen=false,lastResult=null;
 
@@ -141,8 +141,11 @@ async function init(){
    build(active);
 
    $("#loaderText").textContent="Loading face tracker…";
+   const vision=await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21");
+   FaceLandmarker=vision.FaceLandmarker;
+   FilesetResolver=vision.FilesetResolver;
    const fileset=await FilesetResolver.forVisionTasks(
-     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
    );
 
    const options={
@@ -169,6 +172,7 @@ async function init(){
    $("#hud").style.display="block";
    video.style.display="block";
    canvas.style.display="block";
+   show("SELECT A FILTER BELOW");
    $(".vignette").style.display="block";
    $(".scan").style.display="block";
    $("#dot").classList.add("live");
