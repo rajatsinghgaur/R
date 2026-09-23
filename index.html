@@ -59,7 +59,7 @@ import {FaceLandmarker,HandLandmarker,FilesetResolver} from "https://cdn.jsdeliv
 const $=s=>document.querySelector(s);
 const video=$("#camera"),canvas=$("#fx"),ctx=canvas.getContext("2d");
 const FILTERS=[["shadow","Shadow"],["detective","Detective"],["armored","Armored"],["bat","Bat Eyes"]];
-let selected="shadow",stream=null,vision=null,faceLandmarker=null,handLandmarker=null,running=false,mirrored=true,lastVideoTime=-1,lastStamp=0,lastHandRun=0,face=null,hands=[],wristHistory=[];
+let selected="shadow",stream=null,vision=null,faceLandmarker=null,handLandmarker=null,running=false,mirrored=true,lastVideoTime=-1,lastStamp=0,lastHandRun=0,face=null,hands=[],prevWrists=[],wristHistory=[];
 
 function resize(){const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);canvas.style.width=w+"px";canvas.style.height=h+"px";ctx.setTransform(d,0,0,d,0,0)}addEventListener("resize",resize);resize();
 
@@ -79,8 +79,37 @@ function faceStructure(lm){const l=P(lm,234),r=P(lm,454),t=P(lm,10),b=P(lm,152),
 function updateScan(lm){const l=P(lm,234),r=P(lm,454),t=P(lm,10),b=P(lm,152),fw=D(l,r),fh=D(t,b),ang=Math.atan2(r.y-l.y,r.x-l.x)*180/Math.PI;$("#scanState").textContent="LOCKED";$("#structure").textContent=faceStructure(lm)+" geometry";$("#tilt").textContent=Math.round(ang)+"°";$("#coverage").textContent=Math.round((fw/innerWidth)*100)+"%";$("#classification").textContent="Not inferred from face";$("#classification").className="value warn"}
 function motionLabel(){if(wristHistory.length<2)return"Waiting";const recent=wristHistory.slice(-8),sum=recent.reduce((a,p)=>a+p.speed,0)/recent.length;if(sum<8)return"LOW";if(sum<20)return"MEDIUM";return"HIGH"}
 function updateMotion(){const m=motionLabel();$("#hands").textContent=String(hands.length);$("#motion").textContent=m;$("#motion").className="value "+(m==="HIGH"?"accent":m==="MEDIUM"?"warn":"")}
-function updateWristMotion(all){const now=performance.now();for(const lm of all){const p={x:lm[0].x*innerWidth,y:lm[0].y*innerHeight};const prev=wristHistory.find(x=>x.hand===lm);if(prev){const dt=Math.max(16,now-prev.time);const speed=D(p,prev)/dt*1000;prev.x=p.x;prev.y=p.y;prev.time=now;prev.speed=speed}else{wristHistory.push({hand:lm,x:p.x,y:p.y,time:now,speed:0})}}if(wristHistory.length>20)wristHistory=wristHistory.slice(-20);updateMotion()}
-function drawTrail(){ctx.save();for(const h of hands){const p=h.map(v=>({x:v.x*innerWidth,y:v.y*innerHeight}));ctx.strokeStyle="rgba(104,234,255,.18)";ctx.lineWidth=5;ctx.beginPath();ctx.arc(p[0].x,p[0].y,18+Math.sin(performance.now()*.006)*4,0,Math.PI*2);ctx.stroke()}ctx.restore()}
+function updateWristMotion(all){
+ const now=performance.now(),next=[];
+ all.forEach((lm,i)=>{
+   const p={x:lm[0].x*innerWidth,y:lm[0].y*innerHeight};
+   const prev=prevWrists[i];
+   const dt=Math.max(16,now-(prev?.time||now));
+   const speed=prev?D(p,prev)/dt*1000:0;
+   next[i]={x:p.x,y:p.y,time:now,speed};
+   wristHistory.push({x:p.x,y:p.y,time:now,speed});
+ });
+ prevWrists=next;
+ if(wristHistory.length>40)wristHistory=wristHistory.slice(-40);
+ updateMotion();
+}
+function drawTrail(){
+ ctx.save();
+ for(const h of hands){
+   const p={x:h[0].x*innerWidth,y:h[0].y*innerHeight};
+   ctx.strokeStyle="rgba(104,234,255,.18)";
+   ctx.lineWidth=5;
+   ctx.beginPath();
+   ctx.arc(p.x,p.y,18+Math.sin(performance.now()*.006)*4,0,Math.PI*2);
+   ctx.stroke();
+ }
+ ctx.strokeStyle="rgba(104,234,255,.14)";ctx.lineWidth=2;
+ for(let i=1;i<wristHistory.length;i++){
+   const a=wristHistory[i-1],b=wristHistory[i];
+   if(performance.now()-b.time<500){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+ }
+ ctx.restore();
+}
 function drawFrame(now){ctx.clearRect(0,0,innerWidth,innerHeight);if(face){if(selected==="shadow")drawShadow(face);else if(selected==="detective")drawDetective(face);else if(selected==="armored")drawArmored(face);else drawEyes(face);drawTrail();drawHands(hands);const l=P(face,234),r=P(face,454),t=P(face,10),b=P(face,152),cx=(l.x+r.x)/2,cy=(t.y+b.y)/2;ctx.save();ctx.strokeStyle="rgba(190,215,232,.15)";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(cx,cy,D(l,r)*.66,D(t,b)*.62,0,0,Math.PI*2);ctx.stroke();ctx.restore()}}
 
 async function start(){
@@ -98,7 +127,7 @@ async function start(){
    $("#intro").style.display="none";$("#hud").style.display="block";video.style.display="block";canvas.style.display="block";$("#statusDot").classList.add("live");$("#statusText").textContent="LIVE";$("#loader").style.display="none";running=true;lastVideoTime=-1;requestAnimationFrame(loop)
  }catch(e){console.error(e);stream?.getTracks().forEach(t=>t.stop());stream=null;$("#loaderTitle").textContent="GOTHAM AR COULD NOT START";$("#error").textContent=e?.message||String(e);$("#error").classList.add("show");setTimeout(()=>$("#loader").style.display="none",5500)}
 }
-function stop(){running=false;stream?.getTracks().forEach(t=>t.stop());stream=null;video.pause();video.srcObject=null;video.style.display="none";canvas.style.display="none";ctx.clearRect(0,0,innerWidth,innerHeight);$("#hud").style.display="none";$("#intro").style.display="grid";$("#statusDot").classList.remove("live");$("#statusText").textContent="OFFLINE";face=null;hands=[];$("#faceText").textContent="SEARCHING";$("#meter").style.width="18%";$("#scanState").textContent="Waiting";$("#hands").textContent="0";$("#motion").textContent="Waiting"}
+function stop(){running=false;stream?.getTracks().forEach(t=>t.stop());stream=null;prevWrists=[];wristHistory=[];video.pause();video.srcObject=null;video.style.display="none";canvas.style.display="none";ctx.clearRect(0,0,innerWidth,innerHeight);$("#hud").style.display="none";$("#intro").style.display="grid";$("#statusDot").classList.remove("live");$("#statusText").textContent="OFFLINE";face=null;hands=[];$("#faceText").textContent="SEARCHING";$("#meter").style.width="18%";$("#scanState").textContent="Waiting";$("#hands").textContent="0";$("#motion").textContent="Waiting"}
 function loop(now){if(!running)return;if(video.readyState>=2&&video.currentTime!==lastVideoTime){lastVideoTime=video.currentTime;const ts=Math.max(Math.round(video.currentTime*1000),lastStamp+1);lastStamp=ts;try{const fr=faceLandmarker.detectForVideo(video,ts);face=fr.faceLandmarks?.[0]||null;if(face){$("#faceText").textContent="TARGET LOCKED";$("#meter").style.width="96%";updateScan(face)}else{$("#faceText").textContent="SEARCHING";$("#meter").style.width="18%";$("#scanState").textContent="No face"}if(now-lastHandRun>35){const hr=handLandmarker.detectForVideo(video,ts);hands=hr.landmarks||[];lastHandRun=now;updateWristMotion(hands)}}catch(e){console.error(e);$("#faceText").textContent="TRACKER ERROR"}}drawFrame(now);requestAnimationFrame(loop)}
 $("#start").onclick=start;$("#stop").onclick=stop;$("#mirror").onclick=()=>{mirrored=!mirrored;video.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";canvas.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";toast(mirrored?"MIRROR ON":"MIRROR OFF")}
 </script>
