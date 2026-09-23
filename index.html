@@ -48,7 +48,7 @@ import {FaceLandmarker,FilesetResolver} from "https://cdn.jsdelivr.net/npm/@medi
 const $=s=>document.querySelector(s);
 const video=$("#scene"),canvas=$("#overlay"),ctx=canvas.getContext("2d");
 const FILTERS=[["cowl","Cowl"],["shadow","Shadow"],["detective","Detective"],["armored","Armored"],["batEyes","Bat Eyes"]];
-let stream=null,landmarker=null,lastVideo=-1,mirror=true,active="cowl",running=false,faceSeen=false;
+let stream=null,landmarker=null,lastVideo=-1,mirror=true,active="cowl",running=false,faceSeen=false,lastResult=null;
 
 const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setClearColor(0,0);
@@ -84,7 +84,7 @@ function setFilter(id){active=id;document.querySelectorAll(".filter").forEach(b=
 FILTERS.forEach(([id,label])=>{const b=document.createElement("button");b.className="filter"+(id===active?" active":"");b.dataset.id=id;b.textContent=label;b.onclick=()=>setFilter(id);$("#filters").appendChild(b);});
 
 function positionFromFace(lm){
- const nose=lm[1],left=lm[234],right=lm[454],top=lm[10],bottom=lm[152];
+ const left=lm[234],right=lm[454],top=lm[10],bottom=lm[152];
  const cx=(left.x+right.x)/2,cy=(top.y+bottom.y)/2;
  const width=Math.max(.001,Math.abs(right.x-left.x)),height=Math.max(.001,Math.abs(bottom.y-top.y));
  const roll=Math.atan2(right.y-left.y,right.x-left.x);
