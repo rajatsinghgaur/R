@@ -114,7 +114,7 @@ let FaceLandmarker=null,HandLandmarker=null,FilesetResolver=null;
 let faceLandmarker=null,handLandmarker=null,vision=null;
 let stream=null,running=false,mirrored=true,lastVideoTime=-1,lastStamp=0,lastFaceRun=0,lastHandRun=0;
 let face=null,hands=[],smoothHands=[],prevWrist=null;
-let hookah={x:innerWidth*.22,y:innerHeight*.77,scale:1.45,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.38,y:innerHeight*.68},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
+let hookah={x:innerWidth*.17,y:innerHeight*.77,scale:1.8,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.48,y:innerHeight*.58},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
 let pinch=false,smoking=false,smokeParticles=[],lastSmokeAt=0,lastSmokeSource={x:0,y:0};
 function resize(){
   const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,2);
@@ -160,11 +160,23 @@ function getBestHand(){
 
 function updateHandState(){const lm=getBestHand();$("#hands").textContent=String(hands.length);if(!lm){pinch=false;hookah.pipeHeld=false;$("#grip").textContent="OPEN";$("#pipeSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return}const idx=point(lm,8),th=point(lm,4),grab=mid(idx,th),wrist=point(lm,0),now=performance.now(),old=prevWrist;const speed=old?dist(wrist,old)/Math.max(16,now-old.t)*1000:0;prevWrist={x:wrist.x,y:wrist.y,t:now};pinch=dist(idx,th)<Math.max(28,Math.min(innerWidth,innerHeight)*.042);$("#grip").textContent=pinch?"PINCH":"OPEN";$("#pipeSpeed").textContent=Math.round(speed)+" px/s";const nearPipe=dist(grab,hookah.pipeTip)<Math.max(115,Math.min(innerWidth,innerHeight)*.12);if(!hookah.pipeHeld&&pinch&&nearPipe){hookah.pipeHeld=true;toast("PIPE GRABBED")}if(hookah.pipeHeld){hookah.pipeTip.x+=(grab.x-hookah.pipeTip.x)*.48;hookah.pipeTip.y+=(grab.y-hookah.pipeTip.y)*.48;hookah.pipeVelocity=speed;hookah.pipeTrail.push({x:hookah.pipeTip.x,y:hookah.pipeTip.y});if(hookah.pipeTrail.length>18)hookah.pipeTrail.shift();$("#hookahState").textContent="TRACKING";if(!pinch){hookah.pipeHeld=false;toast("PIPE RELEASED")}}else{hookah.pipeVelocity*=.88;hookah.pipeTrail.length=Math.max(0,hookah.pipeTrail.length-1);$("#hookahState").textContent="READY"}const mouth=face?mid(point(face,13),point(face,14)):null,nearMouth=!!mouth&&dist(hookah.pipeTip,mouth)<Math.max(70,Math.min(innerWidth,innerHeight)*.055);smoking=hookah.pipeHeld&&nearMouth;$("#smoking").textContent=smoking?"ON":"OFF";$("#smoking").className="value "+(smoking?"ok":"");if(smoking){$("#smokeState").textContent="MOUTH SMOKE";lastSmokeSource={x:mouth.x,y:mouth.y};if(now-lastSmokeAt>38)spawnMouthSmoke()}else if($("#smokeState").textContent==="MOUTH SMOKE")$("#smokeState").textContent="READY";}
 
-function updateHookah(dt){hookah.x=innerWidth*.22;hookah.y=innerHeight*.77;hookah.pipeBase={x:hookah.x+75*hookah.scale,y:hookah.y+5*hookah.scale};if(!hookah.pipeHeld){const rx=hookah.x+195*hookah.scale,ry=hookah.y+145*hookah.scale;hookah.pipeTip.x+=(rx-hookah.pipeTip.x)*Math.min(1,dt*5);hookah.pipeTip.y+=(ry-hookah.pipeTip.y)*Math.min(1,dt*5);}}
+function updateHookah(dt){hookah.x=innerWidth*.22;hookah.y=innerHeight*.77;hookah.pipeBase={x:hookah.x+75*hookah.scale,y:hookah.y+5*hookah.scale};if(!hookah.pipeHeld){const rx=hookah.x+205*hookah.scale,ry=hookah.y+132*hookah.scale;hookah.pipeTip.x+=(rx-hookah.pipeTip.x)*Math.min(1,dt*5);hookah.pipeTip.y+=(ry-hookah.pipeTip.y)*Math.min(1,dt*5);}}
 
-function spawnMouthSmoke(){const ox=lastSmokeSource.x,oy=lastSmokeSource.y;for(let i=0;i<6;i++)smokeParticles.push({x:ox+(Math.random()-.5)*10,y:oy+(Math.random()-.5)*7,vx:(Math.random()-.5)*18,vy:-16-Math.random()*27,size:7+Math.random()*10,life:0,max:1+Math.random()*1.5,a:.12+Math.random()*.17,phase:Math.random()*Math.PI*2,wobble:1.7+Math.random()*2.5,rot:(Math.random()-.5)*.65});lastSmokeAt=performance.now();}
+function spawnMouthSmoke(){
+  const ox=lastSmokeSource.x,oy=lastSmokeSource.y;
+  for(let i=0;i<8;i++){
+    smokeParticles.push({
+      x:ox+(Math.random()-.5)*14,y:oy+(Math.random()-.5)*9,
+      vx:(Math.random()-.5)*26,vy:-18-Math.random()*34,
+      size:8+Math.random()*12,life:0,max:1.15+Math.random()*1.7,
+      a:.10+Math.random()*.18,phase:Math.random()*Math.PI*2,
+      wobble:1.4+Math.random()*2.8,rot:(Math.random()-.5)*.8
+    });
+  }
+  lastSmokeAt=performance.now();
+}
 
-function updateSmoke(dt){for(let i=smokeParticles.length-1;i>=0;i--){const p=smokeParticles[i],n=p.life/p.max;p.life+=dt;p.x+=p.vx*dt+Math.sin(p.phase+p.life*p.wobble)*15*dt;p.y+=p.vy*dt;p.vx*=.993;p.vy-=4*dt;p.size+=dt*(12+20*n);if(p.life>p.max)smokeParticles.splice(i,1);}}
+function updateSmoke(dt){for(let i=smokeParticles.length-1;i>=0;i--){const p=smokeParticles[i],n=p.life/p.max;p.life+=dt;p.x+=p.vx*dt+Math.sin(p.phase+p.life*p.wobble)*18*dt;p.y+=p.vy*dt;p.vx*=.994;p.vy-=6*dt;p.size+=dt*(14+24*n);if(p.life>p.max)smokeParticles.splice(i,1);}}
 
 function drawSmoke(){ctx.save();ctx.globalCompositeOperation="screen";for(const p of smokeParticles){const n=p.life/p.max,fade=n<.14?n/.14:Math.max(0,1-(n-.14)/.86),r=p.size,g=ctx.createRadialGradient(p.x-r*.22,p.y-r*.18,0,p.x,p.y,r*1.35);g.addColorStop(0,"rgba(255,255,255,.30)");g.addColorStop(.24,"rgba(238,238,232,.18)");g.addColorStop(.60,"rgba(205,205,199,.08)");g.addColorStop(1,"rgba(170,170,166,0)");ctx.fillStyle=g;ctx.globalAlpha=.92*fade;ctx.beginPath();ctx.ellipse(p.x,p.y,r*1.15,r*.82,p.rot,0,Math.PI*2);ctx.fill()}ctx.restore()}
 
@@ -172,7 +184,13 @@ function drawPipeTrail(){if(!hookah.pipeTrail.length)return;ctx.save();ctx.globa
 
 function drawHose(s){const bx=hookah.pipeBase.x,by=hookah.pipeBase.y,tx=hookah.pipeTip.x,ty=hookah.pipeTip.y,dx=tx-bx,dy=ty-by,len=Math.hypot(dx,dy),nx=len?-dy/len:0,ny=len?dx/len:0,sag=Math.min(135*s,60+len*.18),c1={x:bx+dx*.28+nx*sag,y:by+dy*.28+ny*sag},c2={x:bx+dx*.72+nx*sag*.55,y:by+dy*.72+ny*sag*.55};ctx.save();ctx.lineCap="round";ctx.lineWidth=16*s;ctx.strokeStyle="#1e1711";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.lineWidth=10*s;ctx.strokeStyle="#4d3823";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.lineWidth=3*s;ctx.strokeStyle="#a27a46";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.fillStyle="#18120d";ctx.beginPath();ctx.roundRect(tx-13*s,ty-25*s,26*s,50*s,10*s);ctx.fill();ctx.fillStyle="#b78d53";ctx.fillRect(tx-7*s,ty-20*s,14*s,40*s);ctx.fillStyle="#2a1f15";ctx.beginPath();ctx.ellipse(tx,ty-20*s,12*s,4*s,0,0,Math.PI*2);ctx.fill();ctx.restore();}
 
-function drawHookah(){const s=Math.max(.95,Math.min(1.35,innerWidth/920))*hookah.scale,x=hookah.x,y=hookah.y;ctx.save();ctx.translate(x,y);ctx.shadowColor="rgba(0,0,0,.62)";ctx.shadowBlur=30;ctx.fillStyle="#261e17";ctx.beginPath();ctx.ellipse(0,60*s,78*s,27*s,0,0,Math.PI*2);ctx.fill();const g=ctx.createLinearGradient(0,-10*s,0,110*s);g.addColorStop(0,"#d8ae68");g.addColorStop(.38,"#9c7443");g.addColorStop(1,"#3d2a1b");ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-64*s,18*s);ctx.quadraticCurveTo(-74*s,90*s,0,100*s);ctx.quadraticCurveTo(74*s,90*s,64*s,18*s);ctx.quadraticCurveTo(0,-10*s,-64*s,18*s);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#765634";ctx.fillRect(-12*s,-60*s,24*s,80*s);ctx.fillStyle="#e1b872";ctx.beginPath();ctx.ellipse(0,-65*s,30*s,10*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#362317";ctx.beginPath();ctx.ellipse(0,-69*s,20*s,7*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e4bc72";ctx.beginPath();ctx.ellipse(0,-45*s,38*s,9*s,0,0,Math.PI*2);ctx.fill();ctx.restore();drawHose(s);if(hookah.pipeHeld){ctx.save();ctx.strokeStyle="rgba(235,198,120,.7)";ctx.lineWidth=2;ctx.setLineDash([7,6]);ctx.beginPath();ctx.arc(hookah.pipeTip.x,hookah.pipeTip.y,27,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+function drawHookah(){const s=Math.max(.95,Math.min(1.35,innerWidth/920))*hookah.scale,x=hookah.x,y=hookah.y;ctx.save();ctx.translate(x,y);ctx.shadowColor="rgba(0,0,0,.62)";ctx.shadowBlur=30;ctx.fillStyle="#261e17";ctx.beginPath();ctx.ellipse(0,60*s,78*s,27*s,0,0,Math.PI*2);ctx.fill();const g=ctx.createLinearGradient(0,-10*s,0,110*s);g.addColorStop(0,"#d8ae68");g.addColorStop(.38,"#9c7443");g.addColorStop(1,"#3d2a1b");ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-64*s,18*s);ctx.quadraticCurveTo(-74*s,90*s,0,100*s);ctx.quadraticCurveTo(74*s,90*s,64*s,18*s);ctx.quadraticCurveTo(0,-10*s,-64*s,18*s);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#765634";ctx.fillRect(-12*s,-60*s,24*s,80*s);ctx.fillStyle="#e1b872";ctx.beginPath();ctx.ellipse(0,-65*s,30*s,10*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#362317";ctx.beginPath();ctx.ellipse(0,-69*s,20*s,7*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e4bc72";ctx.beginPath();ctx.ellipse(0,-45*s,38*s,9*s,0,0,Math.PI*2);ctx.fill();ctx.restore();drawHose(s);if(hookah.pipeHeld){
+  ctx.save();
+  ctx.shadowColor="rgba(244,205,121,.8)";ctx.shadowBlur=18;
+  ctx.fillStyle="rgba(247,214,143,.92)";ctx.beginPath();ctx.arc(hookah.pipeTip.x,hookah.pipeTip.y,8,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="rgba(235,198,120,.72)";ctx.lineWidth=2;ctx.setLineDash([7,6]);ctx.beginPath();ctx.arc(hookah.pipeTip.x,hookah.pipeTip.y,29,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}}
 
 function updateFace(raw){
   face=face?smoothLandmarks(face,raw,.76):raw;
@@ -239,7 +257,7 @@ async function start(){
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"user"},width:{ideal:1280},height:{ideal:720}},audio:false});
     video.srcObject=stream;await video.play();diag("diagCamera","ok","Camera live");
     $("#intro").style.display="none";$("#hud").style.display="block";video.style.display="block";canvas.style.display="block";$("#statusDot").classList.add("live");$("#statusText").textContent="LIVE";
-    running=true;lastVideoTime=-1;lastStamp=0;face=null;hands=[];smoothHands=[];prevWrist=null;hookah={x:innerWidth*.22,y:innerHeight*.77,scale:1.45,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.38,y:innerHeight*.68},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};smokeParticles=[];smoking=false;lastSmokeSource={x:0,y:0};
+    running=true;lastVideoTime=-1;lastStamp=0;face=null;hands=[];smoothHands=[];prevWrist=null;hookah={x:innerWidth*.17,y:innerHeight*.77,scale:1.8,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.48,y:innerHeight*.58},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};smokeParticles=[];smoking=false;lastSmokeSource={x:0,y:0};
     $("#loader").style.display="none";diag("diagInteraction","warn","Camera active — loading AI");requestAnimationFrame(loop);
     await initVision();
   }catch(e){
