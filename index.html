@@ -55,7 +55,7 @@ header{position:absolute;z-index:20;left:0;right:0;top:0;padding:15px 18px;displ
   <div class="hero">
     <div class="eyebrow">Desi AR // Live Hand Interaction</div>
     <h1>HARYANA<br>HOOKAH</h1>
-    <p>Pick up the virtual hookah with a pinch, throw it with a fast release, then bring your hand to your mouth for a smoke effect.</p>
+    <p>The hookah stays fixed while the pipe auto-follows your hand. Face tracking drives a visible smoke plume from the mouth.</p>
     <button id="start" class="primary">Start Hookah AR</button>
     <div class="privacy">Camera access starts only after your action. Landmark processing is performed in your browser.</div>
   </div>
@@ -78,7 +78,7 @@ header{position:absolute;z-index:20;left:0;right:0;top:0;padding:15px 18px;displ
     <div class="row"><span>Smoke</span><span class="value" id="smokeState">READY</span></div>
   </div>
 
-  <div class="hint">PINCH = HOLD HOOKAH • RELEASE + SWING = THROW • HAND TO MOUTH = SMOKE</div>
+  <div class="hint">PIPE AUTO-FOLLOWS YOUR HAND • MOUTH LOCK = SMOKE</div>
 
   <div class="bottom">
     <button id="mirror" class="control">Mirror</button>
@@ -162,7 +162,7 @@ function updateHandState(){
   const lm=getBestHand();
   $("#hands").textContent=String(hands.length);
   if(!lm){
-    hookah.pipeHeld=false;$("#grip").textContent="WAITING";$("#pipeSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";
+    hookah.pipeHeld=false;$("#grip").textContent="WAITING";$("#throwSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";
     smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return;
   }
   const idx=point(lm,8),th=point(lm,4),grab=mid(idx,th),wrist=point(lm,0),now=performance.now(),old=prevWrist;
@@ -178,21 +178,17 @@ function updateHandState(){
   if(hookah.pipeTrail.length>16)hookah.pipeTrail.shift();
 
   $("#grip").textContent="AUTO";
-  $("#pipeSpeed").textContent=Math.round(speed)+" px/s";
+  $("#throwSpeed").textContent=Math.round(speed)+" px/s";
   $("#hookahState").textContent="HAND TRACKING";
 
+  // Emit smoke whenever the hand is tracked; use the mouth as the source when face tracking is available.
   const mouth=face?mid(point(face,13),point(face,14)):null;
-  const nearMouth=!!mouth&&dist(hookah.pipeTip,mouth)<Math.max(82,Math.min(innerWidth,innerHeight)*.065);
-  smoking=!!nearMouth;
-  $("#smoking").textContent=smoking?"ON":"OFF";
-  $("#smoking").className="value "+(smoking?"ok":"");
-  if(smoking){
-    $("#smokeState").textContent="PUFFING";
-    lastSmokeSource={x:mouth.x,y:mouth.y};
-    if(now-lastSmokeAt>45)spawnMouthSmoke();
-  }else if($("#smokeState").textContent==="PUFFING"){
-    $("#smokeState").textContent="READY";
-  }
+  smoking=true;
+  $("#smoking").textContent="ON";
+  $("#smoking").className="value ok";
+  $("#smokeState").textContent=mouth?"PUFFING":"HAND PUFF";
+  lastSmokeSource=mouth?{x:mouth.x,y:mouth.y}:{x:hookah.pipeTip.x,y:hookah.pipeTip.y};
+  if(now-lastSmokeAt>38)spawnMouthSmoke();
 }
 
 function updateHookah(dt){
@@ -207,13 +203,19 @@ function updateHookah(dt){
 
 function spawnMouthSmoke(){
   const ox=lastSmokeSource.x,oy=lastSmokeSource.y;
-  for(let i=0;i<7;i++){
+  for(let i=0;i<9;i++){
     smokeParticles.push({
-      x:ox+(Math.random()-.5)*12,y:oy+(Math.random()-.5)*8,
-      vx:(Math.random()-.5)*20,vy:-18-Math.random()*30,
-      size:8+Math.random()*12,life:0,max:1.2+Math.random()*1.8,
-      a:.08+Math.random()*.15,phase:Math.random()*Math.PI*2,
-      wobble:1.6+Math.random()*2.6,rot:(Math.random()-.5)*.8
+      x:ox+(Math.random()-.5)*14,
+      y:oy+(Math.random()-.5)*10,
+      vx:(Math.random()-.5)*24,
+      vy:-20-Math.random()*38,
+      size:11+Math.random()*15,
+      life:0,
+      max:1.5+Math.random()*2.2,
+      a:.16+Math.random()*.18,
+      phase:Math.random()*Math.PI*2,
+      wobble:1.7+Math.random()*2.8,
+      rot:(Math.random()-.5)*.9
     });
   }
   lastSmokeAt=performance.now();
@@ -232,17 +234,23 @@ function updateSmoke(dt){
 }
 
 function drawSmoke(){
-  ctx.save();ctx.globalCompositeOperation="screen";
+  ctx.save();
+  ctx.globalCompositeOperation="screen";
   for(const p of smokeParticles){
-    const n=p.life/p.max,fade=n<.12?n/.12:Math.max(0,1-(n-.12)/.88),r=p.size;
-    const g=ctx.createRadialGradient(p.x-r*.28,p.y-r*.2,0,p.x,p.y,r*1.55);
-    g.addColorStop(0,"rgba(255,255,255,.34)");
-    g.addColorStop(.18,"rgba(242,242,236,.23)");
-    g.addColorStop(.42,"rgba(223,223,217,.13)");
-    g.addColorStop(.72,"rgba(192,192,187,.05)");
-    g.addColorStop(1,"rgba(150,150,145,0)");
-    ctx.fillStyle=g;ctx.globalAlpha=.95*fade;
-    ctx.beginPath();ctx.ellipse(p.x,p.y,r*1.2,r*(.75+.18*n),p.rot,0,Math.PI*2);ctx.fill();
+    const n=p.life/p.max;
+    const fade=n<.10?n/.10:Math.max(0,1-(n-.10)/.90);
+    const r=p.size;
+    const g=ctx.createRadialGradient(p.x-r*.30,p.y-r*.22,0,p.x,p.y,r*1.65);
+    g.addColorStop(0,"rgba(255,255,255,.62)");
+    g.addColorStop(.16,"rgba(246,246,242,.48)");
+    g.addColorStop(.38,"rgba(225,225,220,.30)");
+    g.addColorStop(.68,"rgba(190,190,184,.12)");
+    g.addColorStop(1,"rgba(145,145,140,0)");
+    ctx.fillStyle=g;
+    ctx.globalAlpha=.92*fade;
+    ctx.beginPath();
+    ctx.ellipse(p.x,p.y,r*1.25,r*(.80+.22*n),p.rot,0,Math.PI*2);
+    ctx.fill();
   }
   ctx.restore();
 }
