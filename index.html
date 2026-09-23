@@ -3,107 +3,156 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070604">
-<meta name="description" content="Haryana Hookah AR — hand, face, throwing and smoke interaction.">
-<title>HARYANA HOOKAH AR</title>
+<meta name="theme-color" content="#050608">
+<meta name="description" content="BATMAN AR — Gotham-style face and hand tracking interface.">
+<title>BATMAN AR // GOTHAM PROTOCOL</title>
 <style>
-:root{--bg:#070604;--panel:rgba(10,8,5,.82);--line:rgba(245,220,170,.18);--text:#f3eadb;--muted:#a99c89;--gold:#e7ba67;--green:#7ee08b;--red:#ff796f;--smoke:#e9e5dc}
+:root{
+  --bg:#040609;--panel:rgba(5,8,13,.78);--line:rgba(100,145,190,.22);
+  --text:#e9eef4;--muted:#8390a0;--blue:#6bb7ff;--cyan:#8cecff;
+  --yellow:#f5cf55;--red:#ff5f68;--green:#74f0a0;
+}
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 body{touch-action:manipulation}
 button{font:inherit}
-#app{position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 50% 45%,#21180e 0,#0d0905 45%,#050403 100%)}
+#app{position:fixed;inset:0;overflow:hidden;background:
+  radial-gradient(circle at 50% 46%,rgba(35,56,82,.20),transparent 34%),
+  radial-gradient(circle at 50% 110%,rgba(20,44,72,.22),transparent 46%),
+  #040609}
 #camera,#fx{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)}
 #fx{pointer-events:none}
-.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle,transparent 35%,rgba(0,0,0,.42) 100%);z-index:4}
-.grain{position:absolute;inset:0;pointer-events:none;opacity:.05;z-index:5;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.35) 0 1px,transparent 1px 4px)}
-header{position:absolute;z-index:20;left:0;right:0;top:0;padding:15px 18px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,.76),transparent)}
-.brand{font-size:12px;font-weight:1000;letter-spacing:.18em}.brand small{display:block;color:var(--muted);font-size:8px;letter-spacing:.22em;margin-top:4px}
-.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:9px;letter-spacing:.18em}.dot{width:7px;height:7px;border-radius:50%;background:var(--red)}.dot.live{background:var(--green);box-shadow:0 0 12px var(--green)}
-#intro{position:absolute;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px}
-.hero{width:min(760px,92vw);margin-top:-5vh}
-.eyebrow{font-size:9px;letter-spacing:.42em;color:#c9b68e;text-transform:uppercase;margin-bottom:18px}
-.hero h1{margin:0;font-size:clamp(54px,11vw,126px);line-height:.82;letter-spacing:-.07em}
-.hero p{max-width:650px;margin:24px auto 0;color:#c0b4a4;font-size:14px;line-height:1.65}
-.primary{margin-top:28px;border:1px solid #ead49e;background:#f2dfaa;color:#24190b;padding:14px 26px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:1000;letter-spacing:.18em;text-transform:uppercase}
-.privacy{margin-top:12px;color:#837666;font-size:10px}
+.atmosphere{position:absolute;inset:0;pointer-events:none;z-index:4;background:
+  linear-gradient(180deg,rgba(0,0,0,.74),transparent 18%,transparent 78%,rgba(0,0,0,.9)),
+  radial-gradient(circle at 50% 52%,transparent 42%,rgba(0,0,0,.48) 100%)}
+.grid{position:absolute;inset:0;pointer-events:none;z-index:5;opacity:.16;background-image:
+  linear-gradient(rgba(91,147,204,.16) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(91,147,204,.16) 1px,transparent 1px);
+  background-size:42px 42px}
+.scanlines{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.08;background:repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0 1px,transparent 1px 4px)}
+header{position:absolute;z-index:20;left:0;right:0;top:0;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,.9),transparent)}
+.brand{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:1000;letter-spacing:.18em}
+.brandMark{width:30px;height:18px;position:relative;filter:drop-shadow(0 0 8px rgba(245,207,85,.34))}
+.brandMark:before,.brandMark:after{content:"";position:absolute;inset:0;background:var(--yellow);clip-path:polygon(0 56%,13% 43%,23% 48%,31% 34%,39% 45%,50% 18%,61% 45%,69% 34%,77% 48%,87% 43%,100% 56%,92% 66%,82% 72%,73% 78%,62% 83%,50% 88%,38% 83%,27% 78%,18% 72%,8% 66%)}
+.brand small{display:block;color:var(--muted);font-size:7px;letter-spacing:.22em;margin-top:3px}
+.status{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:9px;letter-spacing:.18em}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+.dot.live{background:var(--green);box-shadow:0 0 14px var(--green)}
+#intro{position:absolute;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px;overflow:hidden}
+.introSpot{position:absolute;left:50%;top:38%;width:min(70vw,760px);height:min(20vw,220px);transform:translate(-50%,-50%);background:radial-gradient(ellipse,rgba(245,207,85,.18),rgba(245,207,85,0) 68%);filter:blur(14px)}
+.hero{position:relative;width:min(860px,94vw);margin-top:-5vh}
+.eyebrow{font-size:9px;letter-spacing:.5em;color:#9bb1c8;text-transform:uppercase;margin-bottom:17px}
+.batGlyph{width:min(170px,28vw);height:min(100px,16vw);margin:0 auto 14px;filter:drop-shadow(0 0 26px rgba(245,207,85,.18))}
+.batGlyph svg{width:100%;height:100%}
+.hero h1{margin:0;font-size:clamp(46px,10vw,112px);line-height:.82;letter-spacing:-.07em;color:#f3f6fa}
+.hero h1 span{color:var(--yellow)}
+.hero p{max-width:650px;margin:24px auto 0;color:#9ca9b9;font-size:14px;line-height:1.65}
+.primary{margin-top:28px;border:1px solid rgba(245,207,85,.64);background:#111820;color:#f6d96d;padding:14px 26px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:1000;letter-spacing:.2em;text-transform:uppercase;box-shadow:0 0 24px rgba(245,207,85,.08)}
+.privacy{margin-top:12px;color:#657282;font-size:10px}
 #hud{position:absolute;inset:0;z-index:15;display:none;pointer-events:none}
-.corner{position:absolute;width:42px;height:42px;border-color:rgba(239,212,160,.34);border-style:solid}.tl{left:18px;top:78px;border-width:1px 0 0 1px}.tr{right:18px;top:78px;border-width:1px 1px 0 0}.bl{left:18px;bottom:118px;border-width:0 0 1px 1px}.br{right:18px;bottom:118px;border-width:0 1px 1px 0}
-.target{position:absolute;top:88px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.3em;color:#dfcb9f;text-transform:uppercase;white-space:nowrap}
-.faceState{position:absolute;left:18px;top:122px;display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}.meter{width:78px;height:3px;background:rgba(255,255,255,.12)}.meter i{display:block;width:18%;height:100%;background:var(--gold);transition:width .2s}
-.panel{position:absolute;top:122px;right:18px;width:min(310px,32vw);padding:14px;background:rgba(5,4,3,.68);border:1px solid var(--line);backdrop-filter:blur(8px);pointer-events:none}
-.panel h3{margin:0 0 10px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#ead7b2}.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.07);font-size:10px}.row span:first-child{color:#958978}.value{color:#efe6d7;text-align:right;max-width:62%}.ok{color:var(--green)}.gold{color:var(--gold)}.warn{color:#ffd27a}
-.hint{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);z-index:17;padding:8px 12px;background:rgba(0,0,0,.48);border:1px solid rgba(245,220,170,.14);font-size:9px;letter-spacing:.12em;color:#c6b8a4;text-transform:uppercase;white-space:nowrap}
-.bottom{position:absolute;left:0;right:0;bottom:0;padding:14px 14px max(14px,env(safe-area-inset-bottom));display:flex;justify-content:flex-end;gap:7px;background:linear-gradient(0deg,rgba(0,0,0,.92),transparent);pointer-events:none}.control{padding:10px 12px;border-radius:4px;background:rgba(8,6,4,.86);border:1px solid rgba(245,220,170,.16);color:#dfd2bf;font-size:9px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;cursor:pointer;pointer-events:auto}
-.toast{position:absolute;left:50%;top:18%;z-index:40;transform:translate(-50%,-8px);opacity:0;transition:.25s;background:rgba(0,0,0,.82);border:1px solid rgba(245,220,170,.16);padding:9px 12px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
-#loader{position:absolute;inset:0;z-index:50;background:rgba(3,2,1,.94);display:none;place-items:center;text-align:center;padding:24px}.loaderBox{width:min(490px,90vw)}.loaderTitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase}.bar{height:2px;background:#211a12;margin-top:15px;overflow:hidden}.bar i{display:block;width:30%;height:100%;background:#f2d78f;animation:load 1s infinite}@keyframes load{from{transform:translateX(-140%)}to{transform:translateX(430%)}}.error{display:none;margin-top:14px;color:#ff9eaa;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.error.show{display:block}.diag{margin-top:16px;text-align:left;border-top:1px solid rgba(245,220,170,.09);padding-top:12px}.diagRow{display:flex;gap:8px;align-items:flex-start;font-size:10px;line-height:1.45;color:#8b7d6b;margin:6px 0}.diagRow b{font-size:9px;letter-spacing:.08em;color:#5d5143;min-width:72px}.diagRow span{color:#d2c4b0;word-break:break-word}.diagRow.ok span{color:#85dfa0}.diagRow.fail span{color:#ff8e84}.diagRow.warn span{color:#ffd06f}
-@media(max-width:900px){.panel{width:min(330px,44vw)}}@media(max-width:720px){header{padding:12px 13px}.tl,.tr{top:62px}.bl,.br{bottom:108px}.target{top:69px;font-size:8px}.faceState{top:95px;left:13px;font-size:8px}.panel{left:13px;right:13px;top:auto;bottom:112px;width:auto}.hint{max-width:92vw;text-align:center;white-space:normal}.hero p{font-size:13px}}
+.corner{position:absolute;width:46px;height:46px;border-color:rgba(123,189,241,.28);border-style:solid}
+.tl{left:18px;top:78px;border-width:1px 0 0 1px}.tr{right:18px;top:78px;border-width:1px 1px 0 0}
+.bl{left:18px;bottom:118px;border-width:0 0 1px 1px}.br{right:18px;bottom:118px;border-width:0 1px 1px 0}
+.target{position:absolute;top:86px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.32em;color:#9eb8ce;text-transform:uppercase;white-space:nowrap}
+.faceState{position:absolute;left:18px;top:121px;display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.meter{width:86px;height:3px;background:rgba(255,255,255,.10)}.meter i{display:block;width:14%;height:100%;background:var(--yellow);transition:width .2s}
+.panel{position:absolute;top:121px;right:18px;width:min(315px,32vw);padding:14px;background:rgba(3,6,10,.76);border:1px solid var(--line);backdrop-filter:blur(10px);box-shadow:0 10px 45px rgba(0,0,0,.24);pointer-events:none}
+.panel h3{margin:0 0 10px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#cfdae5}.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);font-size:10px}
+.row span:first-child{color:#718093}.value{color:#e8eef4;text-align:right;max-width:66%}.ok{color:var(--green)}.gold{color:var(--yellow)}.warn{color:#ffd46e}
+.hint{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);z-index:17;padding:8px 12px;background:rgba(1,3,5,.64);border:1px solid rgba(123,189,241,.16);font-size:9px;letter-spacing:.13em;color:#9aabbc;text-transform:uppercase;white-space:nowrap}
+.bottom{position:absolute;left:0;right:0;bottom:0;padding:14px 14px max(14px,env(safe-area-inset-bottom));display:flex;justify-content:flex-end;gap:7px;background:linear-gradient(0deg,rgba(0,0,0,.94),transparent);pointer-events:none}
+.control{padding:10px 12px;border-radius:3px;background:rgba(7,11,16,.9);border:1px solid rgba(123,189,241,.15);color:#b7c5d4;font-size:9px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
+.toast{position:absolute;left:50%;top:18%;z-index:40;transform:translate(-50%,-8px);opacity:0;transition:.25s;background:rgba(0,0,0,.84);border:1px solid rgba(123,189,241,.16);padding:9px 12px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+#loader{position:absolute;inset:0;z-index:50;background:rgba(2,4,7,.96);display:none;place-items:center;text-align:center;padding:24px}
+.loaderBox{width:min(490px,90vw)}.loaderTitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+.bar{height:2px;background:#151d27;margin-top:15px;overflow:hidden}.bar i{display:block;width:30%;height:100%;background:var(--yellow);animation:load 1s infinite}
+@keyframes load{from{transform:translateX(-140%)}to{transform:translateX(430%)}}
+.error{display:none;margin-top:14px;color:#ff9eaa;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.error.show{display:block}
+.diag{margin-top:16px;text-align:left;border-top:1px solid rgba(123,189,241,.10);padding-top:12px}
+.diagRow{display:flex;gap:8px;align-items:flex-start;font-size:10px;line-height:1.45;color:#718093;margin:6px 0}
+.diagRow b{font-size:9px;letter-spacing:.08em;color:#536173;min-width:72px}.diagRow span{color:#c3ceda;word-break:break-word}
+.diagRow.ok span{color:#79e99f}.diagRow.fail span{color:#ff8b82}.diagRow.warn span{color:#ffd06f}
+@media(max-width:900px){.panel{width:min(330px,44vw)}}
+@media(max-width:720px){
+  header{padding:12px 13px}.tl,.tr{top:62px}.bl,.br{bottom:108px}.target{top:69px;font-size:8px}
+  .faceState{top:95px;left:13px;font-size:8px}.panel{left:13px;right:13px;top:auto;bottom:112px;width:auto}
+  .hint{max-width:92vw;text-align:center;white-space:normal}.hero p{font-size:13px}.brandMark{width:25px;height:15px}
+}
 </style>
 </head>
 <body>
 <main id="app">
-<video id="camera" playsinline muted></video>
-<canvas id="fx"></canvas>
-<div class="vignette"></div><div class="grain"></div>
+  <video id="camera" playsinline muted></video>
+  <canvas id="fx"></canvas>
+  <div class="atmosphere"></div><div class="grid"></div><div class="scanlines"></div>
 
-<header>
-  <div class="brand">HARYANA HOOKAH<small>HAND + MOUTH AR</small></div>
-  <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">OFFLINE</span></div>
-</header>
-
-<section id="intro">
-  <div class="hero">
-    <div class="eyebrow">Desi AR // Live Hand Interaction</div>
-    <h1>HARYANA<br>HOOKAH</h1>
-    <p>The hookah stays fixed while the pipe auto-follows your hand. Face tracking drives a visible smoke plume from the mouth.</p>
-    <button id="start" class="primary">Start Hookah AR</button>
-    <div class="privacy">Camera access starts only after your action. Landmark processing is performed in your browser.</div>
-  </div>
-</section>
-
-<section id="hud">
-  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-  <div class="target">HARYANA HOOKAH // HAND + MOUTH TRACKING</div>
-
-  <div class="faceState"><span id="faceText">FACE WAITING</span><span class="meter"><i id="meter"></i></span></div>
-
-  <div class="panel">
-    <h3>Hookah Control</h3>
-    <div class="row"><span>AI status</span><span class="value ok" id="aiState">Starting…</span></div>
-    <div class="row"><span>Hands tracked</span><span class="value gold" id="hands">0</span></div>
-    <div class="row"><span>Grip</span><span class="value" id="grip">OPEN</span></div>
-    <div class="row"><span>Throw speed</span><span class="value" id="throwSpeed">0 px/s</span></div>
-    <div class="row"><span>Hookah</span><span class="value gold" id="hookahState">IDLE</span></div>
-    <div class="row"><span>Smoking</span><span class="value" id="smoking">OFF</span></div>
-    <div class="row"><span>Smoke</span><span class="value" id="smokeState">READY</span></div>
-  </div>
-
-  <div class="hint">PIPE AUTO-FOLLOWS YOUR HAND • MOUTH LOCK = SMOKE</div>
-
-  <div class="bottom">
-    <button id="mirror" class="control">Mirror</button>
-    <button id="stop" class="control">End</button>
-  </div>
-</section>
-
-<div id="toast" class="toast"></div>
-
-<div id="loader">
-  <div class="loaderBox">
-    <div id="loaderTitle" class="loaderTitle">Starting Haryana Hookah AR</div>
-    <div class="bar"><i></i></div>
-    <div id="error" class="error"></div>
-    <div class="diag">
-      <div class="diagRow"><b>CAMERA</b><span id="diagCamera">Waiting</span></div>
-      <div class="diagRow"><b>PACKAGE</b><span id="diagPackage">Waiting</span></div>
-      <div class="diagRow"><b>WASM</b><span id="diagWasm">Waiting</span></div>
-      <div class="diagRow"><b>FACE AI</b><span id="diagFace">Waiting</span></div>
-      <div class="diagRow"><b>HAND AI</b><span id="diagHand">Waiting</span></div>
-      <div class="diagRow"><b>INTERACTION</b><span id="diagInteraction">Waiting</span></div>
+  <header>
+    <div class="brand">
+      <div class="brandMark"></div>
+      <div>BATMAN AR<small>GOTHAM SURVEILLANCE INTERFACE</small></div>
     </div>
-    <div class="help">Use Chrome or Edge and allow camera access.</div>
+    <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">OFFLINE</span></div>
+  </header>
+
+  <section id="intro">
+    <div class="introSpot"></div>
+    <div class="hero">
+      <div class="eyebrow">WayneTech Prototype // Live Computer Vision</div>
+      <div class="batGlyph" aria-hidden="true">
+        <svg viewBox="0 0 300 170">
+          <path fill="#f5cf55" d="M0 83 48 58 76 69 99 45 123 65 150 24 177 65 201 45 224 69 252 58 300 83 269 103 247 124 220 136 189 144 150 151 111 144 80 136 53 124 31 103Z"/>
+          <path fill="#040609" d="M51 87 80 75 111 89 150 61 189 89 220 75 249 87 220 107 191 119 164 126 150 132 136 126 109 119 80 107Z"/>
+        </svg>
+      </div>
+      <h1>GOTHAM <span>AR</span></h1>
+      <p>Face and hand tracking wrapped in a dark Gotham surveillance HUD. Everything runs locally in the browser after you grant camera access.</p>
+      <button id="start" class="primary">Activate AR System</button>
+      <div class="privacy">Camera access starts only after your action. No upload is required for the tracking interface.</div>
+    </div>
+  </section>
+
+  <section id="hud">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="target">GOTHAM AR // MULTI-LANDMARK TRACKING</div>
+    <div class="faceState"><span id="faceText">FACE SEARCH</span><span class="meter"><i id="meter"></i></span></div>
+
+    <div class="panel">
+      <h3>Gotham Control</h3>
+      <div class="row"><span>AI status</span><span class="value ok" id="aiState">Starting…</span></div>
+      <div class="row"><span>Faces tracked</span><span class="value gold" id="faces">0</span></div>
+      <div class="row"><span>Hands tracked</span><span class="value gold" id="hands">0</span></div>
+      <div class="row"><span>Face lock</span><span class="value" id="faceLock">SEARCHING</span></div>
+      <div class="row"><span>Hand lock</span><span class="value" id="handLock">SEARCHING</span></div>
+      <div class="row"><span>Motion</span><span class="value" id="motion">0 px/s</span></div>
+    </div>
+
+    <div class="hint">MOVE YOUR FACE OR HAND • TRACKING OVERLAY FOLLOWS LIVE</div>
+
+    <div class="bottom">
+      <button id="mirror" class="control">Mirror</button>
+      <button id="stop" class="control">End</button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="loader">
+    <div class="loaderBox">
+      <div id="loaderTitle" class="loaderTitle">Activating Gotham AR</div>
+      <div class="bar"><i></i></div>
+      <div id="error" class="error"></div>
+      <div class="diag">
+        <div class="diagRow"><b>CAMERA</b><span id="diagCamera">Waiting</span></div>
+        <div class="diagRow"><b>PACKAGE</b><span id="diagPackage">Waiting</span></div>
+        <div class="diagRow"><b>WASM</b><span id="diagWasm">Waiting</span></div>
+        <div class="diagRow"><b>FACE AI</b><span id="diagFace">Waiting</span></div>
+        <div class="diagRow"><b>HAND AI</b><span id="diagHand">Waiting</span></div>
+        <div class="diagRow"><b>INTERACTION</b><span id="diagInteraction">Waiting</span></div>
+      </div>
+      <div class="help">Use Chrome or Edge and allow camera access.</div>
+    </div>
   </div>
-</div>
 </main>
 
 <script>
@@ -114,18 +163,18 @@ let FaceLandmarker=null,HandLandmarker=null,FilesetResolver=null;
 let faceLandmarker=null,handLandmarker=null,vision=null;
 let stream=null,running=false,mirrored=true,lastVideoTime=-1,lastStamp=0,lastFaceRun=0,lastHandRun=0;
 let face=null,hands=[],smoothHands=[],prevWrist=null;
-let hookah={x:innerWidth*.16,y:innerHeight*.78,scale:1.95,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.5,y:innerHeight*.58},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
-let pinch=false,smoking=false,smokeParticles=[],lastSmokeAt=0,lastSmokeSource={x:0,y:0};
+
 function resize(){
   const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,2);
-  canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);canvas.style.width=w+"px";canvas.style.height=h+"px";
+  canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);
+  canvas.style.width=w+"px";canvas.style.height=h+"px";
   ctx.setTransform(d,0,0,d,0,0);
 }
 addEventListener("resize",resize);resize();
 
 function toast(t){
-  const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(window.__toast);
-  window.__toast=setTimeout(()=>el.classList.remove("show"),1500);
+  const el=$("#toast");el.textContent=t;el.classList.add("show");
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove("show"),1500);
 }
 function diag(id,kind,text){
   const el=$("#"+id),row=el?.parentElement;if(!el||!row)return;
@@ -134,176 +183,120 @@ function diag(id,kind,text){
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function mid(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
 function point(lm,i){return{x:lm[i].x*innerWidth,y:lm[i].y*innerHeight,z:lm[i].z}}
-function smoothLandmarks(prev,next,alpha=.72){return next.map((p,i)=>{const q=prev?.[i];return q?{x:q.x*alpha+p.x*(1-alpha),y:q.y*alpha+p.y*(1-alpha),z:q.z*alpha+p.z*(1-alpha)}:{...p}})}
-
-function drawHandSkeleton(){
-  ctx.save();ctx.lineWidth=2;ctx.strokeStyle="rgba(226,202,145,.72)";ctx.fillStyle="#e8c87f";
-  const bones=[[0,1,2,3,4],[0,5,6,7,8],[0,9,10,11,12],[0,13,14,15,16],[0,17,18,19,20],[5,9,13,17]];
-  for(const lm of hands){
-    const p=lm.map(v=>({x:v.x*innerWidth,y:v.y*innerHeight}));
-    for(const bone of bones){ctx.beginPath();bone.forEach((id,i)=>i?ctx.lineTo(p[id].x,p[id].y):ctx.moveTo(p[id].x,p[id].y));ctx.stroke()}
-    for(const q of p){ctx.beginPath();ctx.arc(q.x,q.y,2.1,0,Math.PI*2);ctx.fill()}
-  }
-  ctx.restore();
+function smoothLandmarks(prev,next,alpha=.72){
+  return next.map((p,i)=>{
+    const q=prev?.[i];
+    return q?{x:q.x*alpha+p.x*(1-alpha),y:q.y*alpha+p.y*(1-alpha),z:q.z*alpha+p.z*(1-alpha)}:{...p}
+  })
 }
-
+function getFaceCenter(lm){
+  return mid(point(lm,1),point(lm,152));
+}
+function getFaceBounds(lm){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const p of lm){
+    const x=p.x*innerWidth,y=p.y*innerHeight;
+    if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+  }
+  return {minX,minY,maxX,maxY};
+}
 function getBestHand(){
   if(!hands.length)return null;
   let best=hands[0],score=-1;
   for(const lm of hands){
-    const wrist=point(lm,0),idx=point(lm,8),th=point(lm,4);
-    const s=1/(1+dist(idx,th))+1/(1+Math.abs(wrist.x-innerWidth*.5)/300);
+    const wrist=point(lm,0);
+    const palm=dist(point(lm,5),point(lm,17));
+    const centerBonus=1/(1+Math.abs(wrist.x-innerWidth*.5)/320);
+    const s=(1/(1+palm*.01))+centerBonus;
     if(s>score){score=s;best=lm}
   }
   return best;
 }
 
-function updateHandState(){
-  const lm=getBestHand();
-  $("#hands").textContent=String(hands.length);
-  if(!lm){
-    hookah.pipeHeld=false;$("#grip").textContent="WAITING";$("#throwSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";
-    smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return;
-  }
-  const idx=point(lm,8),th=point(lm,4),grab=mid(idx,th),wrist=point(lm,0),now=performance.now(),old=prevWrist;
-  const speed=old?dist(wrist,old)/Math.max(16,now-old.t)*1000:0;
-  prevWrist={x:wrist.x,y:wrist.y,t:now};
-
-  // The pipe is always attached to the detected hand, regardless of where the hand is.
-  hookah.pipeHeld=true;
-  hookah.pipeTip.x=grab.x;
-  hookah.pipeTip.y=grab.y;
-  hookah.pipeVelocity=speed;
-  hookah.pipeTrail.push({x:grab.x,y:grab.y});
-  if(hookah.pipeTrail.length>16)hookah.pipeTrail.shift();
-
-  $("#grip").textContent="AUTO";
-  $("#throwSpeed").textContent=Math.round(speed)+" px/s";
-  $("#hookahState").textContent="HAND TRACKING";
-
-  // Emit smoke whenever the hand is tracked; use the mouth as the source when face tracking is available.
-  const mouth=face?mid(point(face,13),point(face,14)):null;
-  smoking=true;
-  $("#smoking").textContent="ON";
-  $("#smoking").className="value ok";
-  $("#smokeState").textContent=mouth?"PUFFING":"HAND PUFF";
-  lastSmokeSource=mouth?{x:mouth.x,y:mouth.y}:{x:hookah.pipeTip.x,y:hookah.pipeTip.y};
-  if(now-lastSmokeAt>38)spawnMouthSmoke();
+function drawBatSymbol(x,y,s,alpha=.24){
+  ctx.save();ctx.translate(x,y);ctx.globalAlpha=alpha;ctx.fillStyle="#f5cf55";
+  ctx.beginPath();
+  ctx.moveTo(-18*s,2*s);ctx.lineTo(-7*s,-4*s);ctx.lineTo(-2*s,-1*s);ctx.lineTo(0,-10*s);
+  ctx.lineTo(2*s,-1*s);ctx.lineTo(7*s,-4*s);ctx.lineTo(18*s,2*s);
+  ctx.lineTo(10*s,5*s);ctx.lineTo(6*s,10*s);ctx.lineTo(0,13*s);
+  ctx.lineTo(-6*s,10*s);ctx.lineTo(-10*s,5*s);ctx.closePath();ctx.fill();ctx.restore();
 }
-
-function updateHookah(dt){
-  hookah.x=innerWidth*.16;hookah.y=innerHeight*.78;
-  hookah.pipeBase={x:hookah.x+78*hookah.scale,y:hookah.y+7*hookah.scale};
-  if(!hookah.pipeHeld){
-    const rx=hookah.x+215*hookah.scale,ry=hookah.y+132*hookah.scale;
-    hookah.pipeTip.x+=(rx-hookah.pipeTip.x)*Math.min(1,dt*5);
-    hookah.pipeTip.y+=(ry-hookah.pipeTip.y)*Math.min(1,dt*5);
+function drawHandOverlay(){
+  const bones=[[0,1,2,3,4],[0,5,6,7,8],[0,9,10,11,12],[0,13,14,15,16],[0,17,18,19,20],[5,9,13,17]];
+  for(const lm of hands){
+    const p=lm.map(v=>({x:v.x*innerWidth,y:v.y*innerHeight}));
+    ctx.save();ctx.lineWidth=2.2;ctx.strokeStyle="rgba(107,183,255,.82)";ctx.fillStyle="#8cecff";
+    for(const bone of bones){
+      ctx.beginPath();
+      bone.forEach((id,i)=>i?ctx.lineTo(p[id].x,p[id].y):ctx.moveTo(p[id].x,p[id].y));
+      ctx.stroke();
+    }
+    for(const q of p){
+      ctx.beginPath();ctx.arc(q.x,q.y,2.2,0,Math.PI*2);ctx.fill();
+    }
+    const palm=mid(p[5],p[17]);
+    drawBatSymbol(palm.x,palm.y,1.25,.28);
+    ctx.restore();
   }
 }
-
-function spawnMouthSmoke(){
-  const ox=lastSmokeSource.x,oy=lastSmokeSource.y;
-  for(let i=0;i<9;i++){
-    smokeParticles.push({
-      x:ox+(Math.random()-.5)*14,
-      y:oy+(Math.random()-.5)*10,
-      vx:(Math.random()-.5)*24,
-      vy:-20-Math.random()*38,
-      size:11+Math.random()*15,
-      life:0,
-      max:1.5+Math.random()*2.2,
-      a:.16+Math.random()*.18,
-      phase:Math.random()*Math.PI*2,
-      wobble:1.7+Math.random()*2.8,
-      rot:(Math.random()-.5)*.9
-    });
-  }
-  lastSmokeAt=performance.now();
-}
-
-function updateSmoke(dt){
-  for(let i=smokeParticles.length-1;i>=0;i--){
-    const p=smokeParticles[i];
-    const n=p.life/p.max;
-    p.life+=dt;
-    p.x+=p.vx*dt+Math.sin(p.phase+p.life*p.wobble)*19*dt;
-    p.y+=p.vy*dt;
-    p.vx*=.992;p.vy-=5*dt;p.size+=dt*(13+22*n);
-    if(p.life>p.max)smokeParticles.splice(i,1);
-  }
-}
-
-function drawSmoke(){
+function drawFaceOverlay(){
+  if(!face)return;
+  const b=getFaceBounds(face),c=getFaceCenter(face);
+  const w=b.maxX-b.minX,h=b.maxY-b.minY;
   ctx.save();
-  ctx.globalCompositeOperation="screen";
-  for(const p of smokeParticles){
-    const n=p.life/p.max;
-    const fade=n<.10?n/.10:Math.max(0,1-(n-.10)/.90);
-    const r=p.size;
-    const g=ctx.createRadialGradient(p.x-r*.30,p.y-r*.22,0,p.x,p.y,r*1.65);
-    g.addColorStop(0,"rgba(255,255,255,.62)");
-    g.addColorStop(.16,"rgba(246,246,242,.48)");
-    g.addColorStop(.38,"rgba(225,225,220,.30)");
-    g.addColorStop(.68,"rgba(190,190,184,.12)");
-    g.addColorStop(1,"rgba(145,145,140,0)");
-    ctx.fillStyle=g;
-    ctx.globalAlpha=.92*fade;
-    ctx.beginPath();
-    ctx.ellipse(p.x,p.y,r*1.25,r*(.80+.22*n),p.rot,0,Math.PI*2);
-    ctx.fill();
-  }
+  ctx.strokeStyle="rgba(245,207,85,.66)";ctx.lineWidth=1.5;ctx.setLineDash([7,8]);
+  ctx.strokeRect(b.minX-8,b.minY-8,w+16,h+16);
+  ctx.setLineDash([]);
+  ctx.strokeStyle="rgba(140,236,255,.18)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(c.x-70,c.y);ctx.lineTo(c.x+70,c.y);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(c.x,c.y-70);ctx.lineTo(c.x,c.y+70);ctx.stroke();
+  const t=(performance.now()/900)%1,sy=b.minY+h*t;
+  const grad=ctx.createLinearGradient(b.minX,sy,b.maxX,sy);
+  grad.addColorStop(0,"rgba(245,207,85,0)");grad.addColorStop(.5,"rgba(245,207,85,.8)");grad.addColorStop(1,"rgba(245,207,85,0)");
+  ctx.strokeStyle=grad;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b.minX,sy);ctx.lineTo(b.maxX,sy);ctx.stroke();
+  ctx.globalAlpha=.5;ctx.fillStyle="#f5cf55";ctx.font="700 10px monospace";
+  ctx.fillText("FACE LOCK",b.minX,b.minY-14);
+  drawBatSymbol(c.x,c.y,w/22,.18);
   ctx.restore();
 }
-
-function drawPipeTrail(){if(!hookah.pipeTrail.length)return;ctx.save();ctx.globalAlpha=.22;ctx.strokeStyle="#e6bc70";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();hookah.pipeTrail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();}
-
-function drawHose(s){
-  const bx=hookah.pipeBase.x,by=hookah.pipeBase.y,tx=hookah.pipeTip.x,ty=hookah.pipeTip.y;
-  const dx=tx-bx,dy=ty-by,len=Math.hypot(dx,dy),nx=len?-dy/len:0,ny=len?dx/len:0,sag=Math.min(145*s,70+len*.16);
-  const c1={x:bx+dx*.26+nx*sag,y:by+dy*.26+ny*sag},c2={x:bx+dx*.74+nx*sag*.56,y:by+dy*.74+ny*sag*.56};
-  ctx.save();ctx.lineCap="round";
-  ctx.lineWidth=19*s;ctx.strokeStyle="#18120e";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();
-  ctx.lineWidth=13*s;ctx.strokeStyle="#49341f";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();
-  ctx.lineWidth=4*s;ctx.strokeStyle="#b18750";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();
-  const ang=Math.atan2(ty-by,tx-bx);
-  ctx.translate(tx,ty);ctx.rotate(ang);
-  ctx.fillStyle="#20160e";ctx.beginPath();ctx.roundRect(-34*s,-15*s,68*s,30*s,12*s);ctx.fill();
-  ctx.fillStyle="#c29458";ctx.fillRect(-24*s,-10*s,42*s,20*s);
-  ctx.fillStyle="#e2bb78";ctx.fillRect(8*s,-11*s,14*s,22*s);
+function drawCorners(){
+  ctx.save();ctx.strokeStyle="rgba(107,183,255,.45)";ctx.lineWidth=1;
+  const pad=24,len=34;
+  const pts=[[pad,pad,pad+len,pad],[innerWidth-pad,pad,innerWidth-pad-len,pad],[pad,innerHeight-pad,pad+len,innerHeight-pad],[innerWidth-pad,innerHeight-pad,innerWidth-pad-len,innerHeight-pad]];
+  for(const a of pts){ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(a[2],a[3]);ctx.stroke()}
   ctx.restore();
 }
-
-function drawHookah(){
-  const s=Math.max(1.05,Math.min(1.55,innerWidth/820))*hookah.scale,x=hookah.x,y=hookah.y;
-  ctx.save();ctx.translate(x,y);
-  ctx.shadowColor="rgba(0,0,0,.66)";ctx.shadowBlur=34;
-  ctx.fillStyle="#241c15";ctx.beginPath();ctx.ellipse(0,68*s,88*s,30*s,0,0,Math.PI*2);ctx.fill();
-  const g=ctx.createLinearGradient(0,-15*s,0,125*s);g.addColorStop(0,"#dfb46d");g.addColorStop(.35,"#9f7544");g.addColorStop(1,"#392719");
-  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-72*s,22*s);ctx.quadraticCurveTo(-84*s,102*s,0,112*s);ctx.quadraticCurveTo(84*s,102*s,72*s,22*s);ctx.quadraticCurveTo(0,-14*s,-72*s,22*s);ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle="#765634";ctx.fillRect(-13*s,-68*s,26*s,92*s);
-  ctx.fillStyle="#e7c17a";ctx.beginPath();ctx.ellipse(0,-74*s,34*s,11*s,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#342216";ctx.beginPath();ctx.ellipse(0,-78*s,23*s,8*s,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#e6be73";ctx.beginPath();ctx.ellipse(0,-50*s,43*s,10*s,0,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-  drawHose(s);
-  if(hookah.pipeHeld){ctx.save();ctx.shadowColor="rgba(255,214,130,.95)";ctx.shadowBlur=22;ctx.fillStyle="rgba(250,216,145,.95)";ctx.beginPath();ctx.arc(hookah.pipeTip.x,hookah.pipeTip.y,10,0,Math.PI*2);ctx.fill();ctx.restore();}
+function drawFrame(){
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  drawCorners();
+  if(face)drawFaceOverlay();
+  drawHandOverlay();
 }
 
 function updateFace(raw){
   face=face?smoothLandmarks(face,raw,.76):raw;
-  $("#faceText").textContent="MOUTH LOCK";
-  $("#meter").style.width="94%";
+  $("#faces").textContent="1";
+  $("#faceText").textContent="FACE LOCK";
+  $("#faceLock").textContent="LOCKED";
+  $("#faceLock").className="value ok";
+  $("#meter").style.width="96%";
 }
-
-function drawFrame(){
-  ctx.clearRect(0,0,innerWidth,innerHeight);
-  drawHookah();drawPipeTrail();
-  drawHandSkeleton();drawSmoke();
-
-  if(face){
-    const m=mid(point(face,13),point(face,14));
-    ctx.save();ctx.strokeStyle=smoking?"rgba(126,224,139,.9)":"rgba(231,186,103,.38)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(m.x,m.y,12,0,Math.PI*2);ctx.stroke();ctx.restore();
+function updateHandState(){
+  $("#hands").textContent=String(hands.length);
+  const lm=getBestHand();
+  if(!lm){
+    $("#handLock").textContent="SEARCHING";
+    $("#handLock").className="value";
+    $("#motion").textContent="0 px/s";
+    prevWrist=null;
+    return;
   }
+  const wrist=point(lm,0),now=performance.now(),old=prevWrist;
+  const speed=old?dist(wrist,old)/Math.max(16,now-old.t)*1000:0;
+  prevWrist={x:wrist,y:wrist,t:now};
+  $("#handLock").textContent="TRACKING";
+  $("#handLock").className="value ok";
+  $("#motion").textContent=Math.round(speed)+" px/s";
 }
 
 async function initVision(){
@@ -317,19 +310,32 @@ async function initVision(){
     diag("diagWasm","ok","Ready");
 
     try{
-      faceLandmarker=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"CPU"},runningMode:"VIDEO",numFaces:1,minFaceDetectionConfidence:.32,minFacePresenceConfidence:.32,minTrackingConfidence:.32});
+      faceLandmarker=await FaceLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"CPU"},
+        runningMode:"VIDEO",numFaces:1,minFaceDetectionConfidence:.32,minFacePresenceConfidence:.32,minTrackingConfidence:.32
+      });
       diag("diagFace","ok","Ready");
     }catch(e){diag("diagFace","fail",(e?.message||String(e)).slice(0,150));console.error(e)}
 
     try{
-      handLandmarker=await HandLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",delegate:"CPU"},runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.32,minHandPresenceConfidence:.32,minTrackingConfidence:.32});
+      handLandmarker=await HandLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",delegate:"CPU"},
+        runningMode:"VIDEO",numHands:2,minHandDetectionConfidence:.32,minHandPresenceConfidence:.32,minTrackingConfidence:.32
+      });
       diag("diagHand","ok","Ready");
     }catch(e){diag("diagHand","fail",(e?.message||String(e)).slice(0,150));console.error(e)}
 
-    if(faceLandmarker||handLandmarker){$("#aiState").textContent=faceLandmarker&&handLandmarker?"READY":"PARTIAL";$("#aiState").className="value "+(faceLandmarker||handLandmarker?"ok":"warn");diag("diagInteraction","ok","Ready")}
-    else{throw new Error("Neither face nor hand AI could initialize.")}
+    if(faceLandmarker||handLandmarker){
+      $("#aiState").textContent=faceLandmarker&&handLandmarker?"READY":"PARTIAL";
+      $("#aiState").className="value "+(faceLandmarker&&handLandmarker?"ok":"warn");
+      diag("diagInteraction","ok","Ready");
+    }else throw new Error("Neither face nor hand AI could initialize.");
   }catch(e){
-    console.error(e);$("#aiState").textContent="FAILED";$("#aiState").className="value warn";diag("diagInteraction","fail",(e?.message||String(e)).slice(0,150));toast("AI LOAD FAILED");
+    console.error(e);
+    $("#aiState").textContent="FAILED";
+    $("#aiState").className="value warn";
+    diag("diagInteraction","fail",(e?.message||String(e)).slice(0,150));
+    toast("AI LOAD FAILED");
   }
 }
 
@@ -337,42 +343,125 @@ function loop(now){
   if(!running)return;
   if(video.readyState>=2 && video.currentTime!==lastVideoTime){
     lastVideoTime=video.currentTime;
-    const ts=Math.max(Math.round(video.currentTime*1000),lastStamp+1);lastStamp=ts;
+    const ts=Math.max(Math.round(video.currentTime*1000),lastStamp+1);
+    lastStamp=ts;
     try{
-      if(faceLandmarker && now-lastFaceRun>90){const fr=faceLandmarker.detectForVideo(video,ts);const raw=fr.faceLandmarks?.[0]||null;if(raw)updateFace(raw);else{$("#faceText").textContent="FACE SEARCH";$("#meter").style.width="18%" ;face=null}lastFaceRun=now}
-      if(handLandmarker && now-lastHandRun>55){const hr=handLandmarker.detectForVideo(video,ts);const rawHands=hr.landmarks||[];smoothHands=rawHands.map((lm,i)=>smoothLandmarks(smoothHands[i],lm,.70));hands=smoothHands;updateHandState();lastHandRun=now}
-    }catch(e){console.error(e);$("#aiState").textContent="TRACKER ERROR";$("#aiState").className="value warn";diag("diagInteraction","fail",(e?.message||String(e)).slice(0,150))}
+      if(faceLandmarker && now-lastFaceRun>90){
+        const fr=faceLandmarker.detectForVideo(video,ts);
+        const raw=fr.faceLandmarks?.[0]||null;
+        if(raw)updateFace(raw);
+        else{
+          face=null;
+          $("#faces").textContent="0";
+          $("#faceText").textContent="FACE SEARCH";
+          $("#faceLock").textContent="SEARCHING";
+          $("#faceLock").className="value";
+          $("#meter").style.width="14%";
+        }
+        lastFaceRun=now;
+      }
+      if(handLandmarker && now-lastHandRun>55){
+        const hr=handLandmarker.detectForVideo(video,ts);
+        const rawHands=hr.landmarks||[];
+        smoothHands=rawHands.map((lm,i)=>smoothLandmarks(smoothHands[i],lm,.62));
+        hands=smoothHands;
+        updateHandState();
+        lastHandRun=now;
+      }
+    }catch(e){
+      console.error(e);
+      $("#aiState").textContent="TRACKER ERROR";
+      $("#aiState").className="value warn";
+      diag("diagInteraction","fail",(e?.message||String(e)).slice(0,150));
+    }
   }
-  updateHookah(1/60);updateSmoke(1/60);drawFrame();requestAnimationFrame(loop);
+  drawFrame();
+  requestAnimationFrame(loop);
 }
 
 async function start(){
-  $("#loader").style.display="grid";$("#error").classList.remove("show");$("#loaderTitle").textContent="Requesting camera…";
+  $("#loader").style.display="grid";
+  $("#error").classList.remove("show");
+  $("#loaderTitle").textContent="Requesting camera…";
   try{
     if(!window.isSecureContext)throw new Error("Camera requires HTTPS. Open the GitHub Pages URL directly.");
     if(!navigator.mediaDevices?.getUserMedia)throw new Error("Camera access is not available in this browser.");
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"user"},width:{ideal:1280},height:{ideal:720}},audio:false});
-    video.srcObject=stream;await video.play();diag("diagCamera","ok","Camera live");
-    $("#intro").style.display="none";$("#hud").style.display="block";video.style.display="block";canvas.style.display="block";$("#statusDot").classList.add("live");$("#statusText").textContent="LIVE";
-    running=true;lastVideoTime=-1;lastStamp=0;face=null;hands=[];smoothHands=[];prevWrist=null;hookah={x:innerWidth*.17,y:innerHeight*.77,scale:1.8,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.48,y:innerHeight*.58},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};smokeParticles=[];smoking=false;lastSmokeSource={x:0,y:0};
-    $("#loader").style.display="none";diag("diagInteraction","warn","Camera active — loading AI");requestAnimationFrame(loop);
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"user"},width:{ideal:1280},height:{ideal:720}},
+      audio:false
+    });
+    video.srcObject=stream;
+    await video.play();
+    diag("diagCamera","ok","Camera live");
+    $("#intro").style.display="none";
+    $("#hud").style.display="block";
+    video.style.display="block";
+    canvas.style.display="block";
+    $("#statusDot").classList.add("live");
+    $("#statusText").textContent="LIVE";
+    running=true;
+    lastVideoTime=-1;lastStamp=0;lastFaceRun=0;lastHandRun=0;
+    face=null;hands=[];smoothHands=[];prevWrist=null;
+    $("#loader").style.display="none";
+    diag("diagInteraction","warn","Camera active — loading AI");
+    requestAnimationFrame(loop);
     await initVision();
   }catch(e){
-    console.error(e);stream?.getTracks().forEach(t=>t.stop());stream=null;running=false;
-    $("#loaderTitle").textContent="HARYANA HOOKAH AR COULD NOT START";$("#error").textContent=(e?.name?e.name+": ":"")+(e?.message||String(e));$("#error").classList.add("show");$("#statusText").textContent="ERROR";$("#statusDot").classList.remove("live");toast("CAMERA ERROR");
+    console.error(e);
+    stream?.getTracks().forEach(t=>t.stop());
+    stream=null;running=false;
+    $("#loaderTitle").textContent="GOTHAM AR COULD NOT START";
+    $("#error").textContent=(e?.name?e.name+": ":"")+(e?.message||String(e));
+    $("#error").classList.add("show");
+    $("#statusText").textContent="ERROR";
+    $("#statusDot").classList.remove("live");
+    toast("CAMERA ERROR");
   }
 }
 
 function stop(){
-  running=false;stream?.getTracks().forEach(t=>t.stop());stream=null;video.pause();video.srcObject=null;video.style.display="none";canvas.style.display="none";face=null;hands=[];smoothHands=[];smokeParticles=[];hookah={x:innerWidth*.16,y:innerHeight*.78,scale:1.95,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.5,y:innerHeight*.58},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
-  $("#hud").style.display="none";$("#intro").style.display="grid";$("#statusText").textContent="OFFLINE";$("#statusDot").classList.remove("live");$("#hands").textContent="0";$("#grip").textContent="OPEN";$("#throwSpeed").textContent="0 px/s";$("#hookahState").textContent="IDLE";$("#smoking").textContent="OFF";$("#smokeState").textContent="READY";
+  running=false;
+  stream?.getTracks().forEach(t=>t.stop());
+  stream=null;
+  video.pause();
+  video.srcObject=null;
+  video.style.display="none";
+  canvas.style.display="none";
+  face=null;hands=[];smoothHands=[];prevWrist=null;
+  $("#hud").style.display="none";
+  $("#intro").style.display="grid";
+  $("#statusText").textContent="OFFLINE";
+  $("#statusDot").classList.remove("live");
+  $("#faces").textContent="0";
+  $("#hands").textContent="0";
+  $("#faceLock").textContent="SEARCHING";
+  $("#handLock").textContent="SEARCHING";
+  $("#motion").textContent="0 px/s";
+  $("#meter").style.width="14%";
+  $("#faceText").textContent="FACE SEARCH";
 }
 
-$("#start").onclick=start;$("#stop").onclick=stop;
-$("#mirror").onclick=()=>{mirrored=!mirrored;video.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";canvas.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";toast(mirrored?"MIRROR ON":"MIRROR OFF")};
+$("#start").onclick=start;
+$("#stop").onclick=stop;
+$("#mirror").onclick=()=>{
+  mirrored=!mirrored;
+  video.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";
+  canvas.style.transform=mirrored?"scaleX(-1)":"scaleX(1)";
+  toast(mirrored?"MIRROR ON":"MIRROR OFF");
+};
 
-window.addEventListener("error",e=>{if(running){$("#aiState").textContent="RUNTIME ERROR";diag("diagInteraction","fail",(e.message||"Browser error").slice(0,150))}});
-window.addEventListener("unhandledrejection",e=>{if(running){console.error(e.reason);diag("diagInteraction","fail",(e.reason?.message||String(e.reason)).slice(0,150))}});
+window.addEventListener("error",e=>{
+  if(running){
+    $("#aiState").textContent="RUNTIME ERROR";
+    diag("diagInteraction","fail",(e.message||"Browser error").slice(0,150));
+  }
+});
+window.addEventListener("unhandledrejection",e=>{
+  if(running){
+    console.error(e.reason);
+    diag("diagInteraction","fail",(e.reason?.message||String(e.reason)).slice(0,150));
+  }
+});
 </script>
 </body>
 </html>
