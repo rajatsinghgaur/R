@@ -114,9 +114,8 @@ let FaceLandmarker=null,HandLandmarker=null,FilesetResolver=null;
 let faceLandmarker=null,handLandmarker=null,vision=null;
 let stream=null,running=false,mirrored=true,lastVideoTime=-1,lastStamp=0,lastFaceRun=0,lastHandRun=0;
 let face=null,hands=[],smoothHands=[],prevWrist=null;
-let hookah={x:innerWidth*.52,y:innerHeight*.74,vx:0,vy:0,angle:0,held:false,state:"IDLE",grabbedBy:null,trail:[]};
-let pinch=false,smoking=false,smokeParticles=[],lastSmokeAt=0;
-
+let hookah={x:innerWidth*.22,y:innerHeight*.77,scale:1.45,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.38,y:innerHeight*.68},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
+let pinch=false,smoking=false,smokeParticles=[],lastSmokeAt=0,lastSmokeSource={x:0,y:0};
 function resize(){
   const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,2);
   canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);canvas.style.width=w+"px";canvas.style.height=h+"px";
@@ -159,130 +158,21 @@ function getBestHand(){
   return best;
 }
 
-function updateHandState(){
-  const lm=getBestHand();
-  $("#hands").textContent=String(hands.length);
-  if(!lm){
-    pinch=false;$("#grip").textContent="OPEN";$("#throwSpeed").textContent="0 px/s";
-    if(!hookah.held&&hookah.state!=="THROWN")$("#hookahState").textContent="IDLE";
-    return;
-  }
+function updateHandState(){const lm=getBestHand();$("#hands").textContent=String(hands.length);if(!lm){pinch=false;hookah.pipeHeld=false;$("#grip").textContent="OPEN";$("#pipeSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return}const idx=point(lm,8),th=point(lm,4),grab=mid(idx,th),wrist=point(lm,0),now=performance.now(),old=prevWrist;const speed=old?dist(wrist,old)/Math.max(16,now-old.t)*1000:0;prevWrist={x:wrist.x,y:wrist.y,t:now};pinch=dist(idx,th)<Math.max(28,Math.min(innerWidth,innerHeight)*.042);$("#grip").textContent=pinch?"PINCH":"OPEN";$("#pipeSpeed").textContent=Math.round(speed)+" px/s";const nearPipe=dist(grab,hookah.pipeTip)<Math.max(115,Math.min(innerWidth,innerHeight)*.12);if(!hookah.pipeHeld&&pinch&&nearPipe){hookah.pipeHeld=true;toast("PIPE GRABBED")}if(hookah.pipeHeld){hookah.pipeTip.x+=(grab.x-hookah.pipeTip.x)*.48;hookah.pipeTip.y+=(grab.y-hookah.pipeTip.y)*.48;hookah.pipeVelocity=speed;hookah.pipeTrail.push({x:hookah.pipeTip.x,y:hookah.pipeTip.y});if(hookah.pipeTrail.length>18)hookah.pipeTrail.shift();$("#hookahState").textContent="TRACKING";if(!pinch){hookah.pipeHeld=false;toast("PIPE RELEASED")}}else{hookah.pipeVelocity*=.88;hookah.pipeTrail.length=Math.max(0,hookah.pipeTrail.length-1);$("#hookahState").textContent="READY"}const mouth=face?mid(point(face,13),point(face,14)):null,nearMouth=!!mouth&&dist(hookah.pipeTip,mouth)<Math.max(70,Math.min(innerWidth,innerHeight)*.055);smoking=hookah.pipeHeld&&nearMouth;$("#smoking").textContent=smoking?"ON":"OFF";$("#smoking").className="value "+(smoking?"ok":"");if(smoking){$("#smokeState").textContent="MOUTH SMOKE";lastSmokeSource={x:mouth.x,y:mouth.y};if(now-lastSmokeAt>38)spawnMouthSmoke()}else if($("#smokeState").textContent==="MOUTH SMOKE")$("#smokeState").textContent="READY";}
 
-  const wrist=point(lm,0),idx=point(lm,8),th=point(lm,4),grab=mid(idx,th);
-  const now=performance.now();
-  const oldWrist=prevWrist;
-  const speed=oldWrist?dist(wrist,oldWrist)/Math.max(16,now-oldWrist.t)*1000:0;
-  prevWrist={x:wrist.x,y:wrist.y,t:now};
-  pinch=dist(idx,th)<Math.max(34,Math.min(innerWidth,innerHeight)*.055);
-  $("#grip").textContent=pinch?"PINCH":"OPEN";
-  $("#hookahState").textContent=hookah.state;
-  $("#throwSpeed").textContent=Math.round(speed)+" px/s";
+function updateHookah(dt){hookah.x=innerWidth*.22;hookah.y=innerHeight*.77;hookah.pipeBase={x:hookah.x+75*hookah.scale,y:hookah.y+5*hookah.scale};if(!hookah.pipeHeld){const rx=hookah.x+195*hookah.scale,ry=hookah.y+145*hookah.scale;hookah.pipeTip.x+=(rx-hookah.pipeTip.x)*Math.min(1,dt*5);hookah.pipeTip.y+=(ry-hookah.pipeTip.y)*Math.min(1,dt*5);}}
 
-  const hookahCenter={x:hookah.x,y:hookah.y};
-  const closeEnough=dist(grab,hookahCenter)<Math.max(150,innerWidth*.14);
+function spawnMouthSmoke(){const ox=lastSmokeSource.x,oy=lastSmokeSource.y;for(let i=0;i<6;i++)smokeParticles.push({x:ox+(Math.random()-.5)*10,y:oy+(Math.random()-.5)*7,vx:(Math.random()-.5)*18,vy:-16-Math.random()*27,size:7+Math.random()*10,life:0,max:1+Math.random()*1.5,a:.12+Math.random()*.17,phase:Math.random()*Math.PI*2,wobble:1.7+Math.random()*2.5,rot:(Math.random()-.5)*.65});lastSmokeAt=performance.now();}
 
-  if(!hookah.held && hookah.state!=="THROWN" && pinch && closeEnough){
-    hookah.held=true;hookah.grabbedBy=true;hookah.state="HELD";hookah.vx=0;hookah.vy=0;hookah.trail=[];toast("HOOKAH GRABBED");
-  }
+function updateSmoke(dt){for(let i=smokeParticles.length-1;i>=0;i--){const p=smokeParticles[i],n=p.life/p.max;p.life+=dt;p.x+=p.vx*dt+Math.sin(p.phase+p.life*p.wobble)*15*dt;p.y+=p.vy*dt;p.vx*=.993;p.vy-=4*dt;p.size+=dt*(12+20*n);if(p.life>p.max)smokeParticles.splice(i,1);}}
 
-  if(hookah.held){
-    hookah.x=grab.x;hookah.y=grab.y+90;hookah.angle+=(speed>.1&&oldWrist?Math.atan2(wrist.y-oldWrist.y,wrist.x-oldWrist.x)*.04:0);
-    if(!pinch){
-      hookah.held=false;hookah.grabbedBy=null;
-      if(speed>620){
-        hookah.state="THROWN";hookah.vx=oldWrist?(wrist.x-oldWrist.x)*35:0;hookah.vy=oldWrist?(wrist.y-oldWrist.y)*35:0;
-        if(Math.abs(hookah.vx)<250)hookah.vx=(wrist.x-innerWidth*.5)*2.4;
-        if(Math.abs(hookah.vy)<250)hookah.vy=(wrist.y-innerHeight*.55)*2.4;
-        toast("HOOKAH THROWN");
-      }else{hookah.state="IDLE";toast("HOOKAH RELEASED")}
-    }
-  }
+function drawSmoke(){ctx.save();ctx.globalCompositeOperation="screen";for(const p of smokeParticles){const n=p.life/p.max,fade=n<.14?n/.14:Math.max(0,1-(n-.14)/.86),r=p.size,g=ctx.createRadialGradient(p.x-r*.22,p.y-r*.18,0,p.x,p.y,r*1.35);g.addColorStop(0,"rgba(255,255,255,.30)");g.addColorStop(.24,"rgba(238,238,232,.18)");g.addColorStop(.60,"rgba(205,205,199,.08)");g.addColorStop(1,"rgba(170,170,166,0)");ctx.fillStyle=g;ctx.globalAlpha=.92*fade;ctx.beginPath();ctx.ellipse(p.x,p.y,r*1.15,r*.82,p.rot,0,Math.PI*2);ctx.fill()}ctx.restore()}
 
-  if(lm){
-    const mouth=face?.length?mid(point(face,13),point(face,14)):null;
-    const nearMouth=mouth&&dist(idx,mouth)<Math.max(95,innerWidth*.08);
-    const mouthGrip=nearMouth&&pinch&&hookah.state!=="THROWN";
-    smoking=!!mouthGrip;
-  }else smoking=false;
+function drawPipeTrail(){if(!hookah.pipeTrail.length)return;ctx.save();ctx.globalAlpha=.22;ctx.strokeStyle="#e6bc70";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();hookah.pipeTrail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();}
 
-  $("#smoking").textContent=smoking?"ON":"OFF";
-  $("#smoking").className="value "+(smoking?"ok":"");
-  if(smoking){
-    $("#smokeState").textContent="PUFFING";
-    if(performance.now()-lastSmokeAt>70){spawnSmoke(true);spawnSmoke(false)}
-  }else if($("#smokeState").textContent==="PUFFING"){ $("#smokeState").textContent="READY"; }
-}
+function drawHose(s){const bx=hookah.pipeBase.x,by=hookah.pipeBase.y,tx=hookah.pipeTip.x,ty=hookah.pipeTip.y,dx=tx-bx,dy=ty-by,len=Math.hypot(dx,dy),nx=len?-dy/len:0,ny=len?dx/len:0,sag=Math.min(135*s,60+len*.18),c1={x:bx+dx*.28+nx*sag,y:by+dy*.28+ny*sag},c2={x:bx+dx*.72+nx*sag*.55,y:by+dy*.72+ny*sag*.55};ctx.save();ctx.lineCap="round";ctx.lineWidth=16*s;ctx.strokeStyle="#1e1711";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.lineWidth=10*s;ctx.strokeStyle="#4d3823";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.lineWidth=3*s;ctx.strokeStyle="#a27a46";ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,tx,ty);ctx.stroke();ctx.fillStyle="#18120d";ctx.beginPath();ctx.roundRect(tx-13*s,ty-25*s,26*s,50*s,10*s);ctx.fill();ctx.fillStyle="#b78d53";ctx.fillRect(tx-7*s,ty-20*s,14*s,40*s);ctx.fillStyle="#2a1f15";ctx.beginPath();ctx.ellipse(tx,ty-20*s,12*s,4*s,0,0,Math.PI*2);ctx.fill();ctx.restore();}
 
-function updateHookah(dt){
-  if(hookah.state==="THROWN"){
-    hookah.vy+=620*dt;hookah.x+=hookah.vx*dt;hookah.y+=hookah.vy*dt;hookah.vx*=.992;hookah.vy*=.998;hookah.angle+=hookah.vx*dt*.002;
-    hookah.trail.push({x:hookah.x,y:hookah.y,a:1});if(hookah.trail.length>18)hookah.trail.shift();
-    if(hookah.x<-260||hookah.x>innerWidth+260||hookah.y>innerHeight+300){
-      hookah.state="IDLE";hookah.x=innerWidth*.52;hookah.y=innerHeight*.74;hookah.vx=0;hookah.vy=0;hookah.angle=0;hookah.trail=[];toast("HOOKAH RESET");
-    }
-  }
-  $("#hookahState").textContent=hookah.state;
-  if(hookah.state!=="THROWN"){hookah.trail=[];
-  }
-}
-
-function spawnSmoke(fromMouth=false){
-  const ox=fromMouth&&face?.length?mid(point(face,13),point(face,14)).x:hookah.x;
-  const oy=fromMouth&&face?.length?mid(point(face,13),point(face,14)).y:hookah.y-70;
-  for(let i=0;i<3;i++){
-    smokeParticles.push({x:ox+(Math.random()-.5)*18,y:oy+(Math.random()-.5)*8,vx:(Math.random()-.5)*18,vy:-25-Math.random()*35,size:8+Math.random()*13,life:0,max:.8+Math.random()*.8,a:.5+Math.random()*.25});
-  }
-  lastSmokeAt=performance.now();
-}
-
-function updateSmoke(dt){
-  for(let i=smokeParticles.length-1;i>=0;i--){
-    const p=smokeParticles[i];p.life+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.99;p.vy-=4*dt;p.size+=dt*8;
-    if(p.life>p.max)smokeParticles.splice(i,1);
-  }
-}
-
-function drawSmoke(){
-  ctx.save();
-  for(const p of smokeParticles){
-    const a=Math.max(0,p.a*(1-p.life/p.max));ctx.globalAlpha=a;ctx.fillStyle="#ebe6dc";ctx.shadowColor="rgba(235,230,220,.45)";ctx.shadowBlur=18;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawTrail(){
-  if(!hookah.trail.length)return;
-  ctx.save();ctx.lineCap="round";for(let i=0;i<hookah.trail.length-1;i++){const a=hookah.trail[i],b=hookah.trail[i+1];ctx.globalAlpha=i/hookah.trail.length*.28;ctx.strokeStyle="#e7bd6d";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}ctx.restore();
-}
-
-function drawHose(x,y,s){
-  ctx.save();ctx.lineWidth=8*s;ctx.lineCap="round";ctx.strokeStyle="#2d241b";ctx.beginPath();ctx.moveTo(x+25*s,y+8*s);ctx.bezierCurveTo(x+95*s,y+35*s,x+125*s,y+70*s,x+145*s,y+105*s);ctx.stroke();
-  ctx.lineWidth=3*s;ctx.strokeStyle="#6e5539";ctx.beginPath();ctx.moveTo(x+25*s,y+8*s);ctx.bezierCurveTo(x+95*s,y+35*s,x+125*s,y+70*s,x+145*s,y+105*s);ctx.stroke();
-  ctx.restore();
-}
-
-function drawHookah(){
-  const s=Math.max(.62,Math.min(1,innerWidth/1200)),x=hookah.x,y=hookah.y;
-  ctx.save();ctx.translate(x,y);ctx.rotate(hookah.angle);ctx.globalAlpha=.98;
-
-  ctx.shadowColor="rgba(0,0,0,.55)";ctx.shadowBlur=22;
-  ctx.fillStyle="#302821";ctx.beginPath();ctx.ellipse(0,48*s,58*s,22*s,0,0,Math.PI*2);ctx.fill();
-  const g=ctx.createLinearGradient(0,0,0,75*s);g.addColorStop(0,"#d4a45a");g.addColorStop(.45,"#89653e");g.addColorStop(1,"#3b2c1f");
-  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-48*s,18*s);ctx.quadraticCurveTo(-55*s,68*s,0,76*s);ctx.quadraticCurveTo(55*s,68*s,48*s,18*s);ctx.quadraticCurveTo(0,-4*s,-48*s,18*s);ctx.fill();
-  ctx.shadowBlur=0;
-
-  ctx.fillStyle="#6e5030";ctx.fillRect(-8*s,-35*s,16*s,50*s);
-  ctx.fillStyle="#cfa35f";ctx.beginPath();ctx.ellipse(0,-39*s,20*s,8*s,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#3a2818";ctx.beginPath();ctx.ellipse(0,-42*s,14*s,5*s,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#d7b16a";ctx.beginPath();ctx.ellipse(0,-27*s,25*s,6*s,0,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle="#8f6b3e";ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(18*s,8*s);ctx.lineTo(38*s,8*s);ctx.stroke();
-
-  drawHose(0,0,s);
-  ctx.fillStyle="#17130f";ctx.beginPath();ctx.roundRect(135*s,100*s,24*s,12*s,5*s);ctx.fill();
-  ctx.fillStyle="#ad8751";ctx.fillRect(132*s,98*s,6*s,16*s);
-  ctx.restore();
-}
+function drawHookah(){const s=Math.max(.95,Math.min(1.35,innerWidth/920))*hookah.scale,x=hookah.x,y=hookah.y;ctx.save();ctx.translate(x,y);ctx.shadowColor="rgba(0,0,0,.62)";ctx.shadowBlur=30;ctx.fillStyle="#261e17";ctx.beginPath();ctx.ellipse(0,60*s,78*s,27*s,0,0,Math.PI*2);ctx.fill();const g=ctx.createLinearGradient(0,-10*s,0,110*s);g.addColorStop(0,"#d8ae68");g.addColorStop(.38,"#9c7443");g.addColorStop(1,"#3d2a1b");ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-64*s,18*s);ctx.quadraticCurveTo(-74*s,90*s,0,100*s);ctx.quadraticCurveTo(74*s,90*s,64*s,18*s);ctx.quadraticCurveTo(0,-10*s,-64*s,18*s);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#765634";ctx.fillRect(-12*s,-60*s,24*s,80*s);ctx.fillStyle="#e1b872";ctx.beginPath();ctx.ellipse(0,-65*s,30*s,10*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#362317";ctx.beginPath();ctx.ellipse(0,-69*s,20*s,7*s,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e4bc72";ctx.beginPath();ctx.ellipse(0,-45*s,38*s,9*s,0,0,Math.PI*2);ctx.fill();ctx.restore();drawHose(s);if(hookah.pipeHeld){ctx.save();ctx.strokeStyle="rgba(235,198,120,.7)";ctx.lineWidth=2;ctx.setLineDash([7,6]);ctx.beginPath();ctx.arc(hookah.pipeTip.x,hookah.pipeTip.y,27,0,Math.PI*2);ctx.stroke();ctx.restore();}}
 
 function updateFace(raw){
   face=face?smoothLandmarks(face,raw,.76):raw;
@@ -292,7 +182,7 @@ function updateFace(raw){
 
 function drawFrame(){
   ctx.clearRect(0,0,innerWidth,innerHeight);
-  drawTrail();drawHookah();
+  drawHookah();drawPipeTrail();
   drawHandSkeleton();drawSmoke();
 
   if(face){
@@ -349,7 +239,7 @@ async function start(){
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"user"},width:{ideal:1280},height:{ideal:720}},audio:false});
     video.srcObject=stream;await video.play();diag("diagCamera","ok","Camera live");
     $("#intro").style.display="none";$("#hud").style.display="block";video.style.display="block";canvas.style.display="block";$("#statusDot").classList.add("live");$("#statusText").textContent="LIVE";
-    running=true;lastVideoTime=-1;lastStamp=0;face=null;hands=[];smoothHands=[];prevWrist=null;hookah={x:innerWidth*.52,y:innerHeight*.74,vx:0,vy:0,angle:0,held:false,state:"IDLE",grabbedBy:null,trail:[]};smokeParticles=[];smoking=false;
+    running=true;lastVideoTime=-1;lastStamp=0;face=null;hands=[];smoothHands=[];prevWrist=null;hookah={x:innerWidth*.22,y:innerHeight*.77,scale:1.45,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.38,y:innerHeight*.68},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};smokeParticles=[];smoking=false;lastSmokeSource={x:0,y:0};
     $("#loader").style.display="none";diag("diagInteraction","warn","Camera active — loading AI");requestAnimationFrame(loop);
     await initVision();
   }catch(e){
@@ -359,7 +249,7 @@ async function start(){
 }
 
 function stop(){
-  running=false;stream?.getTracks().forEach(t=>t.stop());stream=null;video.pause();video.srcObject=null;video.style.display="none";canvas.style.display="none";face=null;hands=[];smoothHands=[];smokeParticles=[];hookah={x:innerWidth*.52,y:innerHeight*.74,vx:0,vy:0,angle:0,held:false,state:"IDLE",grabbedBy:null,trail:[]};
+  running=false;stream?.getTracks().forEach(t=>t.stop());stream=null;video.pause();video.srcObject=null;video.style.display="none";canvas.style.display="none";face=null;hands=[];smoothHands=[];smokeParticles=[];hookah={x:innerWidth*.22,y:innerHeight*.77,scale:1.45,pipeBase:{x:0,y:0},pipeTip:{x:innerWidth*.38,y:innerHeight*.68},pipeHeld:false,pipeVelocity:0,pipeTrail:[]};
   $("#hud").style.display="none";$("#intro").style.display="grid";$("#statusText").textContent="OFFLINE";$("#statusDot").classList.remove("live");$("#hands").textContent="0";$("#grip").textContent="OPEN";$("#throwSpeed").textContent="0 px/s";$("#hookahState").textContent="IDLE";$("#smoking").textContent="OFF";$("#smokeState").textContent="READY";
 }
 
