@@ -162,32 +162,37 @@ function updateHandState(){
   const lm=getBestHand();
   $("#hands").textContent=String(hands.length);
   if(!lm){
-    pinch=false;hookah.pipeHeld=false;$("#grip").textContent="OPEN";$("#pipeSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return;
+    hookah.pipeHeld=false;$("#grip").textContent="WAITING";$("#pipeSpeed").textContent="0 px/s";$("#hookahState").textContent="READY";
+    smoking=false;$("#smoking").textContent="OFF";$("#smoking").className="value";return;
   }
   const idx=point(lm,8),th=point(lm,4),grab=mid(idx,th),wrist=point(lm,0),now=performance.now(),old=prevWrist;
   const speed=old?dist(wrist,old)/Math.max(16,now-old.t)*1000:0;
   prevWrist={x:wrist.x,y:wrist.y,t:now};
-  pinch=dist(idx,th)<Math.max(30,Math.min(innerWidth,innerHeight)*.045);
-  $("#grip").textContent=pinch?"PINCH":"OPEN";$("#pipeSpeed").textContent=Math.round(speed)+" px/s";
-  if(pinch&&!hookah.pipeHeld){hookah.pipeHeld=true;toast("PIPE IN HAND")}
-  if(hookah.pipeHeld){
-    hookah.pipeTip.x=grab.x;hookah.pipeTip.y=grab.y;
-    hookah.pipeVelocity=speed;hookah.pipeTrail.push({x:grab.x,y:grab.y});
-    if(hookah.pipeTrail.length>16)hookah.pipeTrail.shift();
-    $("#hookahState").textContent="HAND TRACKING";
-    if(!pinch){hookah.pipeHeld=false;toast("PIPE RELEASED")}
-  }else{
-    hookah.pipeVelocity*=.88;hookah.pipeTrail.length=Math.max(0,hookah.pipeTrail.length-1);$("#hookahState").textContent="READY";
-  }
+
+  // The pipe is always attached to the detected hand, regardless of where the hand is.
+  hookah.pipeHeld=true;
+  hookah.pipeTip.x=grab.x;
+  hookah.pipeTip.y=grab.y;
+  hookah.pipeVelocity=speed;
+  hookah.pipeTrail.push({x:grab.x,y:grab.y});
+  if(hookah.pipeTrail.length>16)hookah.pipeTrail.shift();
+
+  $("#grip").textContent="AUTO";
+  $("#pipeSpeed").textContent=Math.round(speed)+" px/s";
+  $("#hookahState").textContent="HAND TRACKING";
+
   const mouth=face?mid(point(face,13),point(face,14)):null;
-  const nearMouth=!!mouth&&dist(hookah.pipeTip,mouth)<Math.max(78,Math.min(innerWidth,innerHeight)*.06);
-  smoking=hookah.pipeHeld&&nearMouth;
-  $("#smoking").textContent=smoking?"ON":"OFF";$("#smoking").className="value "+(smoking?"ok":"");
+  const nearMouth=!!mouth&&dist(hookah.pipeTip,mouth)<Math.max(82,Math.min(innerWidth,innerHeight)*.065);
+  smoking=!!nearMouth;
+  $("#smoking").textContent=smoking?"ON":"OFF";
+  $("#smoking").className="value "+(smoking?"ok":"");
   if(smoking){
     $("#smokeState").textContent="PUFFING";
     lastSmokeSource={x:mouth.x,y:mouth.y};
     if(now-lastSmokeAt>45)spawnMouthSmoke();
-  }else if($("#smokeState").textContent==="PUFFING")$("#smokeState").textContent="READY";
+  }else if($("#smokeState").textContent==="PUFFING"){
+    $("#smokeState").textContent="READY";
+  }
 }
 
 function updateHookah(dt){
