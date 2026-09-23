@@ -170,10 +170,12 @@ function updateHandState(){
 
   const wrist=point(lm,0),idx=point(lm,8),th=point(lm,4),grab=mid(idx,th);
   const now=performance.now();
-  const speed=prevWrist?dist(wrist,prevWrist)/Math.max(16,now-prevWrist.t)*1000:0;
+  const oldWrist=prevWrist;
+  const speed=oldWrist?dist(wrist,oldWrist)/Math.max(16,now-oldWrist.t)*1000:0;
   prevWrist={x:wrist.x,y:wrist.y,t:now};
   pinch=dist(idx,th)<Math.max(34,Math.min(innerWidth,innerHeight)*.055);
   $("#grip").textContent=pinch?"PINCH":"OPEN";
+  $("#hookahState").textContent=hookah.state;
   $("#throwSpeed").textContent=Math.round(speed)+" px/s";
 
   const hookahCenter={x:hookah.x,y:hookah.y};
@@ -184,11 +186,11 @@ function updateHandState(){
   }
 
   if(hookah.held){
-    hookah.x=grab.x;hookah.y=grab.y+90;hookah.angle+=(speed>.1?Math.atan2(wrist.y-(prevWrist?.y||wrist.y),wrist.x-(prevWrist?.x||wrist.x))*.04:0);
+    hookah.x=grab.x;hookah.y=grab.y+90;hookah.angle+=(speed>.1&&oldWrist?Math.atan2(wrist.y-oldWrist.y,wrist.x-oldWrist.x)*.04:0);
     if(!pinch){
       hookah.held=false;hookah.grabbedBy=null;
       if(speed>620){
-        hookah.state="THROWN";hookah.vx=(wrist.x-(prevWrist?.x||wrist.x))*35;hookah.vy=(wrist.y-(prevWrist?.y||wrist.y))*35;
+        hookah.state="THROWN";hookah.vx=oldWrist?(wrist.x-oldWrist.x)*35:0;hookah.vy=oldWrist?(wrist.y-oldWrist.y)*35:0;
         if(Math.abs(hookah.vx)<250)hookah.vx=(wrist.x-innerWidth*.5)*2.4;
         if(Math.abs(hookah.vy)<250)hookah.vy=(wrist.y-innerHeight*.55)*2.4;
         toast("HOOKAH THROWN");
@@ -207,7 +209,7 @@ function updateHandState(){
   $("#smoking").className="value "+(smoking?"ok":"");
   if(smoking){
     $("#smokeState").textContent="PUFFING";
-    if(performance.now()-lastSmokeAt>70)spawnSmoke(true);
+    if(performance.now()-lastSmokeAt>70){spawnSmoke(true);spawnSmoke(false)}
   }else if($("#smokeState").textContent==="PUFFING"){ $("#smokeState").textContent="READY"; }
 }
 
@@ -218,8 +220,9 @@ function updateHookah(dt){
     if(hookah.x<-260||hookah.x>innerWidth+260||hookah.y>innerHeight+300){
       hookah.state="IDLE";hookah.x=innerWidth*.52;hookah.y=innerHeight*.74;hookah.vx=0;hookah.vy=0;hookah.angle=0;hookah.trail=[];toast("HOOKAH RESET");
     }
-  }else{
-    hookah.trail=[];
+  }
+  $("#hookahState").textContent=hookah.state;
+  if(hookah.state!=="THROWN"){hookah.trail=[];
   }
 }
 
